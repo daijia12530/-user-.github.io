@@ -1,0 +1,3248 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>顺风车行程发布平台 - 双向选择</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 基础样式保持不变，只添加新增样式 */
+        
+        /* 新增样式：身份选择 */
+        .identity-selector {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .identity-option {
+            flex: 1;
+            text-align: center;
+            padding: 25px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .identity-option:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.05);
+        }
+        
+        .identity-option.selected {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.1);
+        }
+        
+        .identity-option i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+        }
+        
+        .identity-option h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+        
+        /* 证件上传样式 */
+        .documents-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .documents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .document-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border: 2px dashed var(--border-color);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .document-card:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(74, 144, 226, 0.05);
+        }
+        
+        .document-card.uploaded {
+            border-style: solid;
+            border-color: var(--secondary-color);
+            background-color: rgba(52, 199, 89, 0.05);
+        }
+        
+        .document-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+        
+        .document-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .document-status {
+            font-size: 0.85rem;
+            color: var(--gray-color);
+        }
+        
+        .document-status.uploaded {
+            color: var(--secondary-color);
+        }
+        
+        /* 乘客行程样式 */
+        .passenger-ride-form {
+            margin-top: 20px;
+        }
+        
+        .passenger-info {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 行程状态标签 */
+        .ride-status-tag {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .status-waiting {
+            background-color: rgba(255, 149, 0, 0.1);
+            color: var(--warning-color);
+        }
+        
+        .status-accepted {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .status-completed {
+            background-color: rgba(142, 142, 147, 0.1);
+            color: var(--gray-color);
+        }
+        
+        /* 接单/取消按钮 */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        /* 司机信息卡片 */
+        .driver-info-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .driver-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .driver-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .driver-details {
+            flex: 1;
+        }
+        
+        .driver-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .driver-rating {
+            color: var(--warning-color);
+            font-size: 0.9rem;
+        }
+        
+        .driver-contact {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--border-color);
+        }
+        
+        /* 乘客信息卡片 */
+        .passenger-info-card {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 新增：标签页样式 */
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 25px;
+        }
+        
+        .tab {
+            padding: 12px 25px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--dark-color);
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+        }
+        
+        .tab:hover {
+            color: var(--primary-color);
+        }
+        
+        .tab.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* 乘客行程特殊字段 */
+        .passenger-specific-fields {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+        
+        /* 双向选择相关样式 */
+        .bid-section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+        
+        .bid-form {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+        
+        .bid-input-group {
+            flex: 1;
+        }
+        
+        .bid-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        /* 历史行程样式 */
+        .history-ride {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .history-date {
+            color: var(--gray-color);
+            font-size: 0.9rem;
+        }
+        
+        /* 通知样式 */
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+        }
+        
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-item.unread {
+            background-color: rgba(74, 144, 226, 0.05);
+        }
+        
+        .notification-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            color: var(--gray-color);
+            font-size: 0.85rem;
+        }
+        
+        /* 新增：司机认证状态 */
+        .verification-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        .verified {
+            background-color: rgba(52, 199, 89, 0.1);
+            color: var(--secondary-color);
+        }
+        
+        .unverified {
+            background-color: rgba(255, 59, 48, 0.1);
+            color: var(--danger-color);
+        }
+        
+        /* 新增：行程筛选 */
+        .rides-filter {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .filter-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .filter-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- 头部导航 -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-car"></i>
+                    <span>顺风车平台</span>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="#" class="nav-link active" data-page="home">首页</a>
+                    <a href="#" class="nav-link" data-page="publish">发布行程</a>
+                    <a href="#" class="nav-link" data-page="my-rides">我的行程</a>
+                    <a href="#" class="nav-link" data-page="profile">个人资料</a>
+                    <a href="#" class="nav-link" data-page="notifications">通知</a>
+                </div>
+                
+                <div class="user-info" id="userInfo">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span id="userName">请登录</span>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- 主要内容区 -->
+    <main class="container">
+        <!-- 首页/行程列表 -->
+        <div class="page active" id="home">
+            <div class="page-title">
+                <h1>顺风车行程</h1>
+                <p>找到适合您的出行路线，或发布您的行程需求</p>
+            </div>
+            
+            <!-- 行程筛选 -->
+            <div class="rides-filter">
+                <button class="filter-btn active" data-filter="all">全部行程</button>
+                <button class="filter-btn" data-filter="driver">司机行程</button>
+                <button class="filter-btn" data-filter="passenger">乘客需求</button>
+                <button class="filter-btn" data-filter="available">可接单</button>
+            </div>
+            
+            <div class="rides-container" id="ridesList">
+                <!-- 行程将通过JavaScript动态加载 -->
+            </div>
+            
+            <div class="empty-state" id="noRides">
+                <i class="fas fa-car"></i>
+                <h3>暂无行程信息</h3>
+                <p>发布第一条行程，开始您的顺风车之旅</p>
+                <button class="btn btn-primary" id="publishFirstBtn">
+                    <i class="fas fa-plus"></i> 发布行程
+                </button>
+            </div>
+        </div>
+        
+        <!-- 发布行程页面 -->
+        <div class="page" id="publish">
+            <div class="page-title">
+                <h1>发布行程</h1>
+                <p>选择您的身份并发布行程</p>
+            </div>
+            
+            <!-- 身份选择 -->
+            <div class="identity-selector" id="identitySelector">
+                <div class="identity-option" data-identity="passenger">
+                    <i class="fas fa-user"></i>
+                    <h3>我是乘客</h3>
+                    <p>发布出行需求，等待司机接单</p>
+                </div>
+                <div class="identity-option selected" data-identity="driver">
+                    <i class="fas fa-car"></i>
+                    <h3>我是司机</h3>
+                    <p>发布行程路线，等待乘客预约</p>
+                </div>
+            </div>
+            
+            <!-- 司机行程发布表单 -->
+            <div class="card" id="driverRideForm">
+                <form id="rideForm">
+                    <input type="hidden" id="rideIdentity" value="driver">
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发地点</label>
+                                <input type="text" class="form-control" id="fromLocation" placeholder="例如：北京市朝阳区国贸" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">目的地</label>
+                                <input type="text" class="form-control" id="toLocation" placeholder="例如：上海市浦东新区陆家嘴" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发日期</label>
+                                <input type="date" class="form-control" id="rideDate" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发时间</label>
+                                <input type="time" class="form-control" id="rideTime" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">可用座位数</label>
+                                <select class="form-control" id="seatsAvailable" required>
+                                    <option value="1">1个座位</option>
+                                    <option value="2">2个座位</option>
+                                    <option value="3" selected>3个座位</option>
+                                    <option value="4">4个座位</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">车型</label>
+                                <input type="text" class="form-control" id="carModel" placeholder="例如：特斯拉 Model 3" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 按路段收费部分 -->
+                    <div class="form-group">
+                        <label class="form-label">按路段设置费用</label>
+                        <p style="color: var(--gray-color); margin-bottom: 15px; font-size: 0.9rem;">
+                            请为每个路段设置费用，总费用将自动计算。点击途经点可以修改名称。
+                        </p>
+                        
+                        <!-- 途经点列表 -->
+                        <div class="waypoints-list" id="waypointsList" style="display: none;">
+                            <h3>途经点列表</h3>
+                            <div id="waypointsContainer"></div>
+                        </div>
+                        
+                        <div class="route-sections" id="routeSections">
+                            <!-- 初始路段：出发地 -> 目的地 -->
+                            <div class="route-section" data-section="0">
+                                <div class="section-header">
+                                    <div class="section-title">路段 1</div>
+                                </div>
+                                
+                                <div class="section-points">
+                                    <div class="section-point">
+                                        <div class="point-label">起点</div>
+                                        <div class="point-value" id="section0-from">
+                                            <span id="section0-from-text">出发地</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="point-arrow">
+                                        <i class="fas fa-long-arrow-alt-right"></i>
+                                    </div>
+                                    
+                                    <div class="section-point">
+                                        <div class="point-label">终点</div>
+                                        <div class="point-value editable" id="section0-to" onclick="editWaypoint(0, 'to')">
+                                            <span id="section0-to-text">目的地</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="section-cost">
+                                    <span class="cost-label">路段费用：</span>
+                                    <input type="number" class="cost-input" id="section0-cost" min="0" value="100" required>
+                                    <span>元</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-outline add-waypoint-btn" id="addWaypointBtn">
+                            <i class="fas fa-plus"></i> 添加途经点
+                        </button>
+                        
+                        <div class="total-cost">
+                            <div class="total-label">全程总费用：</div>
+                            <div class="total-amount">¥<span id="totalCost">100</span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">行程说明</label>
+                        <textarea class="form-control" id="rideDescription" rows="4" placeholder="请描述您的行程详情，例如：车型、路线偏好、行李要求等"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">联系电话（仅对匹配乘客显示）</label>
+                        <input type="tel" class="form-control" id="contactPhone" placeholder="请输入您的手机号码" required>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button type="button" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem;" id="publishRideBtn">
+                            <i class="fas fa-paper-plane"></i> 发布行程（支付¥2发布费）
+                        </button>
+                        <p style="text-align: center; margin-top: 10px; color: var(--gray-color); font-size: 0.9rem;">
+                            发布信息需支付¥2费用以确保信息真实性
+                        </p>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 乘客行程发布表单 -->
+            <div class="card" id="passengerRideForm" style="display: none;">
+                <form id="passengerForm">
+                    <input type="hidden" id="passengerRideIdentity" value="passenger">
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发地点</label>
+                                <input type="text" class="form-control" id="passengerFromLocation" placeholder="例如：北京市朝阳区国贸" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">目的地</label>
+                                <input type="text" class="form-control" id="passengerToLocation" placeholder="例如：上海市浦东新区陆家嘴" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发日期</label>
+                                <input type="date" class="form-control" id="passengerRideDate" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">出发时间</label>
+                                <input type="time" class="form-control" id="passengerRideTime" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">乘客人数</label>
+                                <select class="form-control" id="passengerCount" required>
+                                    <option value="1">1人</option>
+                                    <option value="2" selected>2人</option>
+                                    <option value="3">3人</option>
+                                    <option value="4">4人</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">行李数量</label>
+                                <select class="form-control" id="luggageCount" required>
+                                    <option value="0">无行李</option>
+                                    <option value="1" selected>1件</option>
+                                    <option value="2">2件</option>
+                                    <option value="3">3件</option>
+                                    <option value="4">4件及以上</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 乘客特殊需求 -->
+                    <div class="passenger-specific-fields">
+                        <div class="form-group">
+                            <label class="form-label">期望费用范围（元）</label>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <input type="number" class="form-control" id="minPrice" placeholder="最低价" min="0" value="80">
+                                </div>
+                                <div class="form-col">
+                                    <input type="number" class="form-control" id="maxPrice" placeholder="最高价" min="0" value="150">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">特殊需求</label>
+                            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="needBabySeat">
+                                    <span>需要儿童座椅</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="allowSmoking">
+                                    <span>允许吸烟</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="allowPets">
+                                    <span>允许携带宠物</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 5px;">
+                                    <input type="checkbox" id="needHelp">
+                                    <span>需要帮助搬运行李</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">行程说明</label>
+                        <textarea class="form-control" id="passengerRideDescription" rows="4" placeholder="请描述您的出行需求，例如：是否有儿童同行、对车型的偏好等"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">联系电话（仅对匹配司机显示）</label>
+                        <input type="tel" class="form-control" id="passengerContactPhone" placeholder="请输入您的手机号码" required>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button type="button" class="btn btn-primary" style="width: 100%; padding: 16px; font-size: 1.1rem;" id="publishPassengerRideBtn">
+                            <i class="fas fa-paper-plane"></i> 发布出行需求（免费）
+                        </button>
+                        <p style="text-align: center; margin-top: 10px; color: var(--gray-color); font-size: 0.9rem;">
+                            乘客发布出行需求免费，等待司机接单后协商具体费用
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 我的行程页面 -->
+        <div class="page" id="my-rides">
+            <div class="page-title">
+                <h1>我的行程</h1>
+                <p>管理您发布或参与的顺风车行程</p>
+            </div>
+            
+            <!-- 标签页 -->
+            <div class="tabs">
+                <div class="tab active" data-tab="my-published">我发布的</div>
+                <div class="tab" data-tab="my-booked">我参与的</div>
+                <div class="tab" data-tab="history">历史行程</div>
+            </div>
+            
+            <!-- 我发布的行程 -->
+            <div class="tab-content active" id="my-published">
+                <div id="myPublishedRides">
+                    <!-- 用户发布的行程将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="empty-state" id="noMyPublishedRides">
+                    <i class="fas fa-road"></i>
+                    <h3>您还没有发布任何行程</h3>
+                    <p>发布您的第一个行程，开始共享出行</p>
+                    <button class="btn btn-primary" id="publishMyRideBtn">
+                        <i class="fas fa-plus"></i> 发布行程
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 我参与的行程 -->
+            <div class="tab-content" id="my-booked">
+                <div id="myBookedRides">
+                    <!-- 用户参与的行程将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="empty-state" id="noMyBookedRides">
+                    <i class="fas fa-users"></i>
+                    <h3>您还没有参与任何行程</h3>
+                    <p>去首页看看有没有合适的行程可以参与</p>
+                    <button class="btn btn-primary" onclick="switchPage('home')">
+                        <i class="fas fa-search"></i> 查看行程
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 历史行程 -->
+            <div class="tab-content" id="history">
+                <div id="historyRides">
+                    <!-- 历史行程将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="empty-state" id="noHistoryRides">
+                    <i class="fas fa-history"></i>
+                    <h3>暂无历史行程</h3>
+                    <p>完成您的第一次顺风车出行后，这里会显示历史记录</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 个人资料页面 -->
+        <div class="page" id="profile">
+            <div class="page-title">
+                <h1>个人资料</h1>
+                <p>管理您的个人信息和账户设置</p>
+            </div>
+            
+            <!-- 基本信息 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">基本信息</h2>
+                </div>
+                
+                <form id="profileForm">
+                    <div class="form-group" style="text-align: center;">
+                        <div class="avatar" style="width: 100px; height: 100px; margin: 0 auto 20px; cursor: pointer;" id="avatarUpload">
+                            <i class="fas fa-user" style="font-size: 3rem;"></i>
+                        </div>
+                        <p>点击头像更换</p>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">姓名</label>
+                                <input type="text" class="form-control" id="profileName" placeholder="请输入您的姓名" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">手机号码</label>
+                                <input type="tel" class="form-control" id="profilePhone" placeholder="请输入手机号码" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">身份证号</label>
+                                <input type="text" class="form-control" id="idCardNumber" placeholder="请输入身份证号码">
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">电子邮箱</label>
+                                <input type="email" class="form-control" id="profileEmail" placeholder="请输入电子邮箱">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">个人简介</label>
+                        <textarea class="form-control" id="profileBio" rows="3" placeholder="简单介绍一下自己，例如：经常往返于北京和上海，喜欢结交新朋友"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">主要身份</label>
+                        <div style="display: flex; gap: 20px;">
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="mainIdentity" value="driver" checked>
+                                <span>司机</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="mainIdentity" value="passenger">
+                                <span>乘客</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px;">
+                                <input type="radio" name="mainIdentity" value="both">
+                                <span>两者皆是</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button type="button" class="btn btn-success" style="width: 100%; padding: 16px; font-size: 1.1rem;" id="saveProfileBtn">
+                            <i class="fas fa-save"></i> 保存个人信息
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- 司机认证 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">司机认证</h2>
+                    <div id="verificationStatus" class="verification-status unverified">
+                        <i class="fas fa-times-circle"></i>
+                        <span>未认证</span>
+                    </div>
+                </div>
+                
+                <div class="documents-section">
+                    <p style="color: var(--gray-color); margin-bottom: 20px;">
+                        请上传以下证件照片以完成司机认证。所有证件信息将被严格保密。
+                    </p>
+                    
+                    <div class="documents-grid">
+                        <div class="document-card" onclick="uploadDocument('drivingLicense')">
+                            <div class="document-icon">
+                                <i class="fas fa-id-card"></i>
+                            </div>
+                            <div class="document-name">驾驶证</div>
+                            <div class="document-status" id="drivingLicenseStatus">未上传</div>
+                        </div>
+                        
+                        <div class="document-card" onclick="uploadDocument('vehicleLicense')">
+                            <div class="document-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div class="document-name">行驶证</div>
+                            <div class="document-status" id="vehicleLicenseStatus">未上传</div>
+                        </div>
+                        
+                        <div class="document-card" onclick="uploadDocument('operationLicense')">
+                            <div class="document-icon">
+                                <i class="fas fa-file-contract"></i>
+                            </div>
+                            <div class="document-name">道路运输证</div>
+                            <div class="document-status" id="operationLicenseStatus">未上传</div>
+                        </div>
+                        
+                        <div class="document-card" onclick="uploadDocument('idCard')">
+                            <div class="document-icon">
+                                <i class="fas fa-address-card"></i>
+                            </div>
+                            <div class="document-name">身份证</div>
+                            <div class="document-status" id="idCardStatus">未上传</div>
+                        </div>
+                        
+                        <div class="document-card" onclick="uploadDocument('driverPhoto')">
+                            <div class="document-icon">
+                                <i class="fas fa-user-check"></i>
+                            </div>
+                            <div class="document-name">人车合一照片</div>
+                            <div class="document-status" id="driverPhotoStatus">未上传</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center;">
+                        <button class="btn btn-primary" id="submitVerificationBtn" disabled>
+                            <i class="fas fa-check-circle"></i> 提交认证申请
+                        </button>
+                        <p style="color: var(--gray-color); margin-top: 10px; font-size: 0.9rem;">
+                            上传所有证件后可以提交认证申请，审核需要1-3个工作日
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 车辆信息 -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">车辆信息</h2>
+                </div>
+                
+                <form id="vehicleForm">
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">车牌号码</label>
+                                <input type="text" class="form-control" id="plateNumber" placeholder="例如：京A12345">
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">车辆品牌</label>
+                                <input type="text" class="form-control" id="carBrand" placeholder="例如：特斯拉">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">车型</label>
+                                <input type="text" class="form-control" id="carModelProfile" placeholder="例如：Model 3">
+                            </div>
+                        </div>
+                        
+                        <div class="form-col">
+                            <div class="form-group">
+                                <label class="form-label">车辆颜色</label>
+                                <input type="text" class="form-control" id="carColor" placeholder="例如：白色">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">车辆照片</label>
+                        <div style="border: 2px dashed var(--border-color); border-radius: 8px; padding: 30px; text-align: center; cursor: pointer;" onclick="uploadCarPhoto()">
+                            <i class="fas fa-car" style="font-size: 2rem; color: var(--gray-color); margin-bottom: 15px;"></i>
+                            <p>点击上传车辆照片</p>
+                            <input type="file" id="carPhoto" accept="image/*" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button type="button" class="btn btn-outline" style="width: 100%; padding: 16px;" id="saveVehicleBtn">
+                            <i class="fas fa-save"></i> 保存车辆信息
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 通知页面 -->
+        <div class="page" id="notifications">
+            <div class="page-title">
+                <h1>通知</h1>
+                <p>查看您的行程通知和系统消息</p>
+            </div>
+            
+            <div class="card">
+                <div id="notificationsList">
+                    <!-- 通知将通过JavaScript动态加载 -->
+                </div>
+                
+                <div class="empty-state" id="noNotifications">
+                    <i class="fas fa-bell"></i>
+                    <h3>暂无通知</h3>
+                    <p>当有行程更新时，您会在这里收到通知</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 登录模态框 -->
+        <div class="modal" id="loginModal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeLoginModal">&times;</span>
+                <h2 style="margin-bottom: 20px; color: var(--primary-color);">登录顺风车平台</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">手机号码</label>
+                    <input type="tel" class="form-control" id="loginPhone" placeholder="请输入手机号码">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">验证码</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" class="form-control" id="loginCode" placeholder="请输入验证码">
+                        <button class="btn btn-outline" id="sendCodeBtn" style="white-space: nowrap;">获取验证码</button>
+                    </div>
+                </div>
+                
+                <button class="btn btn-primary" style="width: 100%; padding: 14px;" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> 登录/注册
+                </button>
+                
+                <p style="text-align: center; margin: 20px 0; color: var(--gray-color);">或</div>
+                
+                <button class="btn wechat-login-btn" id="wechatLoginBtn">
+                    <i class="fab fa-weixin"></i> 微信一键登录
+                </button>
+                
+                <p style="text-align: center; margin-top: 20px; color: var(--gray-color); font-size: 0.9rem;">
+                    登录即表示您同意我们的<u>服务协议</u>和<u>隐私政策</u>
+                </p>
+            </div>
+        </div>
+        
+        <!-- 支付模态框 -->
+        <div class="modal" id="paymentModal">
+            <div class="modal-content">
+                <span class="close-modal" id="closePaymentModal">&times;</span>
+                <h2 style="margin-bottom: 20px; color: var(--primary-color);">支付发布费用</h2>
+                
+                <div style="text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 8px; margin-bottom: 25px;">
+                    <h3 style="color: var(--dark-color);">发布费用：<span style="color: var(--danger-color); font-size: 1.5rem;">¥2.00</span></h3>
+                    <p style="color: var(--gray-color); margin-top: 10px;">支付后您的行程将立即发布</p>
+                </div>
+                
+                <div class="payment-options">
+                    <div class="payment-option wechat-pay selected" data-method="wechat">
+                        <i class="fab fa-weixin"></i>
+                        <p>微信支付</p>
+                    </div>
+                    <div class="payment-option alipay" data-method="alipay">
+                        <i class="fab fa-alipay"></i>
+                        <p>支付宝</p>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button class="btn btn-success" style="width: 100%; padding: 16px; font-size: 1.1rem;" id="confirmPaymentBtn">
+                        <i class="fas fa-check-circle"></i> 确认支付 ¥2.00
+                    </button>
+                </div>
+                
+                <p style="text-align: center; margin-top: 20px; color: var(--gray-color); font-size: 0.9rem;">
+                    支付完成后，行程将立即发布到平台
+                </p>
+            </div>
+        </div>
+        
+        <!-- 接单/报价模态框 -->
+        <div class="modal" id="bidModal">
+            <div class="modal-content">
+                <span class="close-modal" id="closeBidModal">&times;</span>
+                <h2 style="margin-bottom: 20px; color: var(--primary-color);" id="bidModalTitle">接单</h2>
+                
+                <div id="bidModalContent">
+                    <!-- 内容将通过JavaScript动态加载 -->
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>顺风车平台</h3>
+                    <p>绿色出行，共享旅程，让每一次出行都更有意义。</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>快速链接</h3>
+                    <ul class="footer-links">
+                        <li><a href="#" data-page="home">首页</a></li>
+                        <li><a href="#" data-page="publish">发布行程</a></li>
+                        <li><a href="#" data-page="my-rides">我的行程</a></li>
+                        <li><a href="#" data-page="profile">个人资料</a></li>
+                        <li><a href="#" data-page="notifications">通知</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>联系我们</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-phone"></i> 客服热线：400-123-4567</li>
+                        <li><i class="fas fa-envelope"></i> 邮箱：support@carpool.com</li>
+                        <li><i class="fas fa-map-marker-alt"></i> 地址：北京市朝阳区顺风车大厦</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>© 2023 顺风车行程发布平台. 版权所有. 京ICP备12345678号</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        // 应用状态管理
+        const AppState = {
+            isLoggedIn: false,
+            currentUser: null,
+            rides: [],
+            paymentMethod: 'wechat',
+            waypoints: [], // 存储途经点
+            editingWaypointIndex: -1, // 当前正在编辑的途经点索引
+            editingWaypointField: null, // 正在编辑的字段（from/to）
+            userIdentity: 'driver', // 当前用户身份
+            documents: {
+                drivingLicense: { uploaded: false, status: '未上传' },
+                vehicleLicense: { uploaded: false, status: '未上传' },
+                operationLicense: { uploaded: false, status: '未上传' },
+                idCard: { uploaded: false, status: '未上传' },
+                driverPhoto: { uploaded: false, status: '未上传' }
+            },
+            notifications: [], // 用户通知
+            activeFilter: 'all' // 当前行程筛选
+        };
+        
+        // 模拟的行程数据
+        const sampleRides = [
+            // 司机行程
+            {
+                id: 1,
+                userId: 1,
+                identity: 'driver',
+                from: "北京市朝阳区国贸",
+                to: "上海市浦东新区陆家嘴",
+                waypoints: ["天津市", "济南市"],
+                sectionCosts: [50, 80, 70],
+                totalCost: 200,
+                date: "2023-10-15",
+                time: "08:00",
+                seats: 3,
+                seatsAvailable: 3,
+                carModel: "特斯拉 Model 3",
+                description: "周末去上海办事，可以带3人，SUV车型，后备箱空间充足",
+                contact: "138****5678",
+                status: "available", // available, accepted, completed
+                driverStatus: "verified", // verified, unverified
+                userName: "张先生",
+                userAvatar: "张",
+                bookedBy: [] // 已预订的乘客ID数组
+            },
+            {
+                id: 2,
+                userId: 2,
+                identity: 'driver',
+                from: "广州市天河区体育西路",
+                to: "深圳市南山区科技园",
+                waypoints: ["东莞市"],
+                sectionCosts: [40, 50],
+                totalCost: 90,
+                date: "2023-10-16",
+                time: "14:30",
+                seats: 2,
+                seatsAvailable: 1,
+                carModel: "丰田凯美瑞",
+                description: "每周一固定去深圳，可充电",
+                contact: "139****1234",
+                status: "available",
+                driverStatus: "verified",
+                userName: "李女士",
+                userAvatar: "李",
+                bookedBy: [3] // 乘客ID为3的用户已预订
+            },
+            {
+                id: 3,
+                userId: 3,
+                identity: 'driver',
+                from: "成都市锦江区春熙路",
+                to: "重庆市渝中区解放碑",
+                waypoints: ["内江市", "永川区"],
+                sectionCosts: [40, 60, 50],
+                totalCost: 150,
+                date: "2023-10-18",
+                time: "10:00",
+                seats: 4,
+                seatsAvailable: 4,
+                carModel: "丰田汉兰达",
+                description: "回重庆老家，空间大，可带行李",
+                contact: "137****8765",
+                status: "accepted", // 已被接单
+                driverStatus: "verified",
+                userName: "王先生",
+                userAvatar: "王",
+                bookedBy: [4], // 乘客ID为4的用户已预订
+                acceptedBy: 4 // 接单的乘客ID
+            },
+            // 乘客行程
+            {
+                id: 4,
+                userId: 4,
+                identity: 'passenger',
+                from: "北京市海淀区中关村",
+                to: "天津市滨海新区",
+                date: "2023-10-17",
+                time: "09:00",
+                passengerCount: 2,
+                luggageCount: 2,
+                minPrice: 80,
+                maxPrice: 120,
+                specialNeeds: ["需要儿童座椅", "需要帮助搬运行李"],
+                description: "带小孩去天津，需要儿童座椅，行李较多",
+                contact: "135****4321",
+                status: "waiting", // waiting, accepted, completed
+                userName: "赵女士",
+                userAvatar: "赵",
+                acceptedBy: null, // 接单的司机ID
+                bids: [ // 司机报价
+                    { driverId: 1, driverName: "张先生", price: 100, message: "我有儿童座椅" },
+                    { driverId: 2, driverName: "李女士", price: 90, message: "可帮忙搬运行李" }
+                ]
+            },
+            {
+                id: 5,
+                userId: 5,
+                identity: 'passenger',
+                from: "上海市徐汇区徐家汇",
+                to: "江苏省苏州市工业园区",
+                date: "2023-10-19",
+                time: "13:00",
+                passengerCount: 1,
+                luggageCount: 1,
+                minPrice: 60,
+                maxPrice: 100,
+                specialNeeds: ["允许携带宠物"],
+                description: "带小狗去苏州，小型犬，很乖",
+                contact: "136****9876",
+                status: "accepted", // 已被接单
+                userName: "陈先生",
+                userAvatar: "陈",
+                acceptedBy: 1, // 接单的司机ID
+                acceptedPrice: 80, // 协商价格
+                bids: []
+            }
+        ];
+        
+        // 模拟的通知数据
+        const sampleNotifications = [
+            {
+                id: 1,
+                userId: 1,
+                title: "您的行程有新报价",
+                message: "司机李女士对您的出行需求报价¥90",
+                type: "bid",
+                rideId: 4,
+                time: "2023-10-14 10:30",
+                read: false
+            },
+            {
+                id: 2,
+                userId: 2,
+                title: "有人预订了您的行程",
+                message: "乘客赵女士预订了您的行程（北京→上海）",
+                type: "booking",
+                rideId: 1,
+                time: "2023-10-14 09:15",
+                read: true
+            },
+            {
+                id: 3,
+                userId: 3,
+                title: "行程提醒",
+                message: "您明天的行程（成都→重庆）即将出发，请做好准备",
+                type: "reminder",
+                rideId: 3,
+                time: "2023-10-17 18:00",
+                read: false
+            },
+            {
+                id: 4,
+                userId: 4,
+                title: "司机已接单",
+                message: "司机张先生接受了您的出行需求，行程价格¥80",
+                type: "accepted",
+                rideId: 5,
+                time: "2023-10-18 14:20",
+                read: true
+            }
+        ];
+        
+        // 初始化应用
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查本地存储中是否有用户数据
+            const savedUser = localStorage.getItem('carpool_user');
+            if (savedUser) {
+                AppState.currentUser = JSON.parse(savedUser);
+                AppState.isLoggedIn = true;
+                updateUserInfo();
+                
+                // 加载用户的通知
+                loadNotifications();
+            }
+            
+            // 加载行程数据
+            loadRides();
+            
+            // 设置默认日期和时间
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('rideDate').value = today;
+            document.getElementById('passengerRideDate').value = today;
+            
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('rideTime').value = `${hours}:${minutes}`;
+            document.getElementById('passengerRideTime').value = `${hours}:${minutes}`;
+            
+            // 初始化路段收费系统
+            initRouteSections();
+            
+            // 绑定事件监听器
+            bindEvents();
+            
+            // 初始化筛选功能
+            initFilters();
+        });
+        
+        // 初始化筛选功能
+        function initFilters() {
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // 更新活跃筛选按钮
+                    document.querySelectorAll('.filter-btn').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 更新当前筛选
+                    AppState.activeFilter = this.getAttribute('data-filter');
+                    
+                    // 重新加载行程
+                    loadRides();
+                });
+            });
+        }
+        
+        // 加载通知
+        function loadNotifications() {
+            if (!AppState.isLoggedIn) return;
+            
+            const notificationsContainer = document.getElementById('notificationsList');
+            const noNotifications = document.getElementById('noNotifications');
+            
+            // 过滤当前用户的通知
+            const userNotifications = sampleNotifications.filter(notification => 
+                notification.userId === AppState.currentUser.id
+            );
+            
+            if (userNotifications.length === 0) {
+                notificationsContainer.style.display = 'none';
+                noNotifications.style.display = 'block';
+                return;
+            }
+            
+            notificationsContainer.style.display = 'block';
+            noNotifications.style.display = 'none';
+            
+            // 清空现有内容
+            notificationsContainer.innerHTML = '';
+            
+            // 添加通知
+            userNotifications.forEach(notification => {
+                const notificationElement = document.createElement('div');
+                notificationElement.className = `notification-item ${notification.read ? '' : 'unread'}`;
+                notificationElement.onclick = function() {
+                    markNotificationAsRead(notification.id);
+                    // 根据通知类型执行相应操作
+                    if (notification.type === 'bid' || notification.type === 'booking') {
+                        switchPage('my-rides');
+                        // 切换到对应的标签页
+                        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+                        document.querySelector('[data-tab="my-published"]').classList.add('active');
+                        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                        document.getElementById('my-published').classList.add('active');
+                    }
+                };
+                
+                notificationElement.innerHTML = `
+                    <div class="notification-title">${notification.title}</div>
+                    <div class="notification-message">${notification.message}</div>
+                    <div class="notification-time">${notification.time}</div>
+                `;
+                
+                notificationsContainer.appendChild(notificationElement);
+            });
+        }
+        
+        // 标记通知为已读
+        function markNotificationAsRead(notificationId) {
+            const notification = sampleNotifications.find(n => n.id === notificationId);
+            if (notification) {
+                notification.read = true;
+                loadNotifications();
+            }
+        }
+        
+        // 上传证件
+        function uploadDocument(documentType) {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            // 创建文件输入元素
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    // 模拟上传过程
+                    simulateDocumentUpload(documentType, file.name);
+                }
+            };
+            
+            input.click();
+        }
+        
+        // 模拟证件上传
+        function simulateDocumentUpload(documentType, fileName) {
+            // 更新状态
+            AppState.documents[documentType].uploaded = true;
+            AppState.documents[documentType].status = '已上传';
+            
+            // 更新UI
+            document.getElementById(`${documentType}Status`).textContent = '已上传';
+            document.getElementById(`${documentType}Status`).className = 'document-status uploaded';
+            
+            // 找到对应的卡片并添加已上传样式
+            const cards = document.querySelectorAll('.document-card');
+            cards.forEach(card => {
+                if (card.querySelector('.document-name').textContent === getDocumentName(documentType)) {
+                    card.classList.add('uploaded');
+                }
+            });
+            
+            // 检查是否所有证件都已上传
+            checkAllDocumentsUploaded();
+            
+            alert(`证件 "${getDocumentName(documentType)}" 上传成功: ${fileName}`);
+        }
+        
+        // 获取证件名称
+        function getDocumentName(documentType) {
+            const names = {
+                drivingLicense: '驾驶证',
+                vehicleLicense: '行驶证',
+                operationLicense: '道路运输证',
+                idCard: '身份证',
+                driverPhoto: '人车合一照片'
+            };
+            return names[documentType];
+        }
+        
+        // 检查所有证件是否已上传
+        function checkAllDocumentsUploaded() {
+            const allUploaded = Object.values(AppState.documents).every(doc => doc.uploaded);
+            const submitBtn = document.getElementById('submitVerificationBtn');
+            
+            if (allUploaded) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check-circle"></i> 提交认证申请';
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+        
+        // 上传车辆照片
+        function uploadCarPhoto() {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            const input = document.getElementById('carPhoto');
+            input.click();
+            
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    alert(`车辆照片上传成功: ${file.name}`);
+                }
+            };
+        }
+        
+        // 初始化路段收费系统
+        function initRouteSections() {
+            // 清空现有的途经点
+            AppState.waypoints = [];
+            
+            // 更新出发地和目的地的显示
+            updateRouteSectionDisplay();
+            
+            // 计算总费用
+            updateTotalCost();
+            
+            // 监听出发地和目的地的变化
+            document.getElementById('fromLocation').addEventListener('input', updateRouteSectionDisplay);
+            document.getElementById('toLocation').addEventListener('input', updateRouteSectionDisplay);
+            
+            // 监听费用输入变化
+            document.getElementById('section0-cost').addEventListener('input', updateTotalCost);
+        }
+        
+        // 更新路段显示
+        function updateRouteSectionDisplay() {
+            const fromLocation = document.getElementById('fromLocation').value || '出发地';
+            const toLocation = document.getElementById('toLocation').value || '目的地';
+            
+            // 更新第一个路段的起点
+            document.getElementById('section0-from-text').textContent = fromLocation;
+            
+            // 如果有途经点，第一个路段的终点是第一个途经点
+            if (AppState.waypoints.length > 0) {
+                document.getElementById('section0-to-text').textContent = AppState.waypoints[0];
+            } else {
+                document.getElementById('section0-to-text').textContent = toLocation;
+            }
+            
+            // 更新其他路段的显示
+            for (let i = 1; i <= AppState.waypoints.length; i++) {
+                const sectionElement = document.querySelector(`[data-section="${i}"]`);
+                if (sectionElement) {
+                    const fromPointText = sectionElement.querySelector('#section' + i + '-from-text');
+                    const toPointText = sectionElement.querySelector('#section' + i + '-to-text');
+                    
+                    if (fromPointText) {
+                        // 当前路段的起点是上一个途经点
+                        if (i === 1) {
+                            fromPointText.textContent = AppState.waypoints[0];
+                        } else {
+                            fromPointText.textContent = AppState.waypoints[i-1];
+                        }
+                    }
+                    
+                    if (toPointText) {
+                        // 如果是最后一个路段，终点是目的地
+                        if (i === AppState.waypoints.length) {
+                            toPointText.textContent = toLocation;
+                        } else {
+                            // 否则终点是下一个途经点
+                            toPointText.textContent = AppState.waypoints[i];
+                        }
+                    }
+                }
+            }
+            
+            // 更新途经点列表
+            updateWaypointsList();
+        }
+        
+        // 更新途经点列表
+        function updateWaypointsList() {
+            const waypointsContainer = document.getElementById('waypointsContainer');
+            const waypointsList = document.getElementById('waypointsList');
+            
+            // 清空现有途经点
+            waypointsContainer.innerHTML = '';
+            
+            // 如果没有途经点，隐藏途经点列表
+            if (AppState.waypoints.length === 0) {
+                waypointsList.style.display = 'none';
+                return;
+            }
+            
+            // 显示途经点列表
+            waypointsList.style.display = 'block';
+            
+            // 添加每个途经点
+            AppState.waypoints.forEach((waypoint, index) => {
+                const waypointItem = document.createElement('div');
+                waypointItem.className = 'waypoint-item';
+                waypointItem.innerHTML = `
+                    <span style="min-width: 60px;">途经点 ${index + 1}</span>
+                    <input type="text" class="waypoint-input" value="${waypoint}" 
+                           data-index="${index}" 
+                           onchange="updateWaypointName(${index}, this.value)">
+                    <button type="button" class="btn btn-danger" onclick="removeWaypoint(${index})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                `;
+                waypointsContainer.appendChild(waypointItem);
+            });
+        }
+        
+        // 添加途经点
+        function addWaypoint() {
+            const waypointCount = AppState.waypoints.length;
+            const newWaypointIndex = waypointCount;
+            
+            // 添加途经点到数组
+            AppState.waypoints.push(`途经点${waypointCount + 1}`);
+            
+            // 创建新的路段元素
+            const routeSectionsContainer = document.getElementById('routeSections');
+            
+            // 更新上一个路段的终点
+            const prevSectionElement = document.querySelector(`[data-section="${newWaypointIndex}"]`);
+            if (prevSectionElement) {
+                const prevToPoint = prevSectionElement.querySelector('#section' + newWaypointIndex + '-to-text');
+                if (prevToPoint) {
+                    prevToPoint.textContent = AppState.waypoints[newWaypointIndex];
+                }
+            }
+            
+            // 创建新路段
+            const newSectionElement = document.createElement('div');
+            newSectionElement.className = 'route-section';
+            newSectionElement.setAttribute('data-section', newWaypointIndex + 1);
+            
+            newSectionElement.innerHTML = `
+                <div class="section-header">
+                    <div class="section-title">路段 ${newWaypointIndex + 2}</div>
+                    <button type="button" class="btn btn-danger remove-waypoint-btn" onclick="removeWaypoint(${newWaypointIndex})">
+                        <i class="fas fa-trash"></i> 删除途经点
+                    </button>
+                </div>
+                
+                <div class="section-points">
+                    <div class="section-point">
+                        <div class="point-label">起点</div>
+                        <div class="point-value editable" id="section${newWaypointIndex + 1}-from" onclick="editWaypoint(${newWaypointIndex}, 'from')">
+                            <span id="section${newWaypointIndex + 1}-from-text">${AppState.waypoints[newWaypointIndex]}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="point-arrow">
+                        <i class="fas fa-long-arrow-alt-right"></i>
+                    </div>
+                    
+                    <div class="section-point">
+                        <div class="point-label">终点</div>
+                        <div class="point-value editable" id="section${newWaypointIndex + 1}-to" onclick="editWaypoint(${newWaypointIndex + 1}, 'to')">
+                            <span id="section${newWaypointIndex + 1}-to-text">${newWaypointIndex + 1 === AppState.waypoints.length ? (document.getElementById('toLocation').value || '目的地') : `途经点${newWaypointIndex + 2}`}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-cost">
+                    <span class="cost-label">路段费用：</span>
+                    <input type="number" class="cost-input" id="section${newWaypointIndex + 1}-cost" min="0" value="50" required oninput="updateTotalCost()">
+                    <span>元</span>
+                </div>
+            `;
+            
+            // 添加到容器中
+            routeSectionsContainer.appendChild(newSectionElement);
+            
+            // 更新路段显示
+            updateRouteSectionDisplay();
+            
+            // 更新总费用
+            updateTotalCost();
+        }
+        
+        // 更新途经点名称
+        function updateWaypointName(index, newName) {
+            if (index >= 0 && index < AppState.waypoints.length) {
+                AppState.waypoints[index] = newName;
+                updateRouteSectionDisplay();
+            }
+        }
+        
+        // 编辑途经点
+        function editWaypoint(index, field) {
+            AppState.editingWaypointIndex = index;
+            AppState.editingWaypointField = field;
+            
+            // 获取当前值
+            let currentValue = '';
+            if (field === 'from' && index >= 0) {
+                currentValue = AppState.waypoints[index];
+            } else if (field === 'to') {
+                if (index === AppState.waypoints.length) {
+                    // 目的地
+                    currentValue = document.getElementById('toLocation').value || '目的地';
+                } else if (index >= 0 && index < AppState.waypoints.length) {
+                    currentValue = AppState.waypoints[index];
+                }
+            }
+            
+            // 显示编辑输入框
+            const waypointElementId = field === 'from' ? `section${index+1}-from` : `section${index}-to`;
+            const waypointElement = document.getElementById(waypointElementId);
+            
+            if (waypointElement) {
+                const textElement = waypointElement.querySelector('span');
+                if (textElement) {
+                    const currentText = textElement.textContent;
+                    
+                    // 创建输入框
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = currentText;
+                    input.style.width = '100%';
+                    input.style.border = 'none';
+                    input.style.outline = 'none';
+                    input.style.fontSize = '1rem';
+                    input.style.padding = '0';
+                    
+                    // 替换文本为输入框
+                    textElement.style.display = 'none';
+                    waypointElement.appendChild(input);
+                    
+                    // 聚焦输入框
+                    input.focus();
+                    input.select();
+                    
+                    // 处理输入框失去焦点事件
+                    input.addEventListener('blur', function() {
+                        const newValue = input.value.trim();
+                        
+                        if (newValue) {
+                            // 更新相应的值
+                            if (field === 'from' && index >= 0 && index < AppState.waypoints.length) {
+                                AppState.waypoints[index] = newValue;
+                            } else if (field === 'to') {
+                                if (index === AppState.waypoints.length) {
+                                    // 更新目的地
+                                    document.getElementById('toLocation').value = newValue;
+                                } else if (index >= 0 && index < AppState.waypoints.length) {
+                                    AppState.waypoints[index] = newValue;
+                                }
+                            }
+                            
+                            // 更新显示
+                            updateRouteSectionDisplay();
+                        }
+                        
+                        // 恢复文本显示
+                        textElement.style.display = 'inline';
+                        waypointElement.removeChild(input);
+                    });
+                    
+                    // 处理回车键
+                    input.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            input.blur();
+                        }
+                    });
+                }
+            }
+        }
+        
+        // 删除途经点
+        function removeWaypoint(index) {
+            if (index < 0 || index >= AppState.waypoints.length) return;
+            
+            // 从数组中删除途经点
+            AppState.waypoints.splice(index, 1);
+            
+            // 删除对应的路段元素
+            const sectionElement = document.querySelector(`[data-section="${index + 1}"]`);
+            if (sectionElement) {
+                sectionElement.remove();
+            }
+            
+            // 重新编号剩余的路段
+            const allSections = document.querySelectorAll('.route-section');
+            
+            // 更新所有路段的data-section属性和标题
+            allSections.forEach((section, i) => {
+                section.setAttribute('data-section', i);
+                
+                const titleElement = section.querySelector('.section-title');
+                if (titleElement) {
+                    titleElement.textContent = `路段 ${i + 1}`;
+                }
+                
+                // 更新输入框的ID
+                const costInput = section.querySelector('.cost-input');
+                if (costInput) {
+                    costInput.id = `section${i}-cost`;
+                }
+                
+                // 更新删除按钮的onclick事件
+                const removeBtn = section.querySelector('.remove-waypoint-btn');
+                if (removeBtn) {
+                    removeBtn.setAttribute('onclick', `removeWaypoint(${i - 1})`);
+                }
+            });
+            
+            // 更新路段显示
+            updateRouteSectionDisplay();
+            
+            // 更新总费用
+            updateTotalCost();
+        }
+        
+        // 更新总费用
+        function updateTotalCost() {
+            let total = 0;
+            
+            // 获取所有路段费用输入框
+            const costInputs = document.querySelectorAll('.cost-input');
+            
+            costInputs.forEach(input => {
+                const cost = parseFloat(input.value) || 0;
+                total += cost;
+            });
+            
+            // 更新总费用显示
+            document.getElementById('totalCost').textContent = total;
+        }
+        
+        // 绑定所有事件
+        function bindEvents() {
+            // 导航链接
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = this.getAttribute('data-page');
+                    switchPage(page);
+                    
+                    // 更新活跃导航项
+                    document.querySelectorAll('.nav-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // 用户信息区域点击显示登录模态框
+            document.getElementById('userInfo').addEventListener('click', function() {
+                if (!AppState.isLoggedIn) {
+                    showLoginModal();
+                }
+            });
+            
+            // 发布第一条行程按钮
+            document.getElementById('publishFirstBtn')?.addEventListener('click', function() {
+                if (!AppState.isLoggedIn) {
+                    showLoginModal();
+                } else {
+                    switchPage('publish');
+                    document.querySelectorAll('.nav-link').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    document.querySelector('[data-page="publish"]').classList.add('active');
+                }
+            });
+            
+            // 发布我的行程按钮
+            document.getElementById('publishMyRideBtn')?.addEventListener('click', function() {
+                switchPage('publish');
+                document.querySelectorAll('.nav-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector('[data-page="publish"]').classList.add('active');
+            });
+            
+            // 身份选择
+            document.querySelectorAll('.identity-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const identity = this.getAttribute('data-identity');
+                    
+                    // 更新活跃身份选项
+                    document.querySelectorAll('.identity-option').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    
+                    // 显示对应的表单
+                    if (identity === 'driver') {
+                        document.getElementById('driverRideForm').style.display = 'block';
+                        document.getElementById('passengerRideForm').style.display = 'none';
+                        AppState.userIdentity = 'driver';
+                    } else {
+                        document.getElementById('driverRideForm').style.display = 'none';
+                        document.getElementById('passengerRideForm').style.display = 'block';
+                        AppState.userIdentity = 'passenger';
+                    }
+                });
+            });
+            
+            // 标签页切换
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // 更新活跃标签页
+                    document.querySelectorAll('.tab').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // 显示对应的内容
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // 加载对应的数据
+                    if (tabId === 'my-published') {
+                        loadMyPublishedRides();
+                    } else if (tabId === 'my-booked') {
+                        loadMyBookedRides();
+                    } else if (tabId === 'history') {
+                        loadHistoryRides();
+                    }
+                });
+            });
+            
+            // 关闭模态框按钮
+            document.getElementById('closeLoginModal').addEventListener('click', hideLoginModal);
+            document.getElementById('closePaymentModal').addEventListener('click', hidePaymentModal);
+            document.getElementById('closeBidModal').addEventListener('click', hideBidModal);
+            
+            // 点击模态框外部关闭
+            document.querySelectorAll('.modal').forEach(modal => {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.style.display = 'none';
+                    }
+                });
+            });
+            
+            // 登录按钮
+            document.getElementById('loginBtn').addEventListener('click', handleLogin);
+            
+            // 发送验证码按钮
+            document.getElementById('sendCodeBtn').addEventListener('click', function() {
+                const phone = document.getElementById('loginPhone').value;
+                if (!phone || phone.length !== 11) {
+                    alert('请输入有效的手机号码');
+                    return;
+                }
+                
+                // 模拟发送验证码
+                this.disabled = true;
+                this.textContent = '60秒后重试';
+                
+                let countdown = 60;
+                const timer = setInterval(() => {
+                    countdown--;
+                    this.textContent = `${countdown}秒后重试`;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        this.disabled = false;
+                        this.textContent = '获取验证码';
+                    }
+                }, 1000);
+                
+                alert(`验证码已发送到 ${phone}，请输入验证码：123456`);
+                document.getElementById('loginCode').value = '123456';
+            });
+            
+            // 微信登录按钮
+            document.getElementById('wechatLoginBtn').addEventListener('click', function() {
+                // 模拟微信登录
+                const mockUser = {
+                    id: Date.now(),
+                    name: "微信用户" + Math.floor(Math.random() * 1000),
+                    phone: "138****" + Math.floor(Math.random() * 10000).toString().padStart(4, '0'),
+                    email: "wechatuser@example.com",
+                    bio: "通过微信登录的用户",
+                    mainIdentity: "driver",
+                    driverVerified: false,
+                    vehicleInfo: null
+                };
+                
+                // 更新应用状态
+                AppState.currentUser = mockUser;
+                AppState.isLoggedIn = true;
+                
+                // 保存到本地存储
+                localStorage.setItem('carpool_user', JSON.stringify(mockUser));
+                
+                // 更新用户界面
+                updateUserInfo();
+                
+                // 关闭登录模态框
+                hideLoginModal();
+                
+                // 显示登录成功消息
+                alert(`微信登录成功！欢迎 ${mockUser.name}`);
+            });
+            
+            // 支付选项选择
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-option').forEach(item => {
+                        item.classList.remove('selected');
+                    });
+                    this.classList.add('selected');
+                    AppState.paymentMethod = this.getAttribute('data-method');
+                });
+            });
+            
+            // 发布司机行程按钮
+            document.getElementById('publishRideBtn').addEventListener('click', function() {
+                if (!AppState.isLoggedIn) {
+                    showLoginModal();
+                    return;
+                }
+                
+                // 验证表单
+                const formValid = validateDriverRideForm();
+                if (formValid) {
+                    showPaymentModal();
+                }
+            });
+            
+            // 发布乘客行程按钮
+            document.getElementById('publishPassengerRideBtn').addEventListener('click', function() {
+                if (!AppState.isLoggedIn) {
+                    showLoginModal();
+                    return;
+                }
+                
+                // 验证表单
+                const formValid = validatePassengerRideForm();
+                if (formValid) {
+                    publishPassengerRide();
+                }
+            });
+            
+            // 确认支付按钮
+            document.getElementById('confirmPaymentBtn').addEventListener('click', confirmPayment);
+            
+            // 保存个人资料按钮
+            document.getElementById('saveProfileBtn').addEventListener('click', saveProfile);
+            
+            // 保存车辆信息按钮
+            document.getElementById('saveVehicleBtn').addEventListener('click', saveVehicleInfo);
+            
+            // 提交认证申请按钮
+            document.getElementById('submitVerificationBtn').addEventListener('click', submitVerification);
+            
+            // 头像上传
+            document.getElementById('avatarUpload').addEventListener('click', function() {
+                alert('在实际应用中，这里会上传头像图片');
+            });
+            
+            // 添加途经点按钮
+            document.getElementById('addWaypointBtn').addEventListener('click', addWaypoint);
+        }
+        
+        // 验证司机行程表单
+        function validateDriverRideForm() {
+            const fromLocation = document.getElementById('fromLocation').value;
+            const toLocation = document.getElementById('toLocation').value;
+            const rideDate = document.getElementById('rideDate').value;
+            const rideTime = document.getElementById('rideTime').value;
+            const contactPhone = document.getElementById('contactPhone').value;
+            const carModel = document.getElementById('carModel').value;
+            
+            if (!fromLocation || !toLocation) {
+                alert('请填写出发地和目的地');
+                return false;
+            }
+            
+            if (!rideDate || !rideTime) {
+                alert('请选择出发日期和时间');
+                return false;
+            }
+            
+            if (!contactPhone || contactPhone.length !== 11) {
+                alert('请输入有效的手机号码');
+                return false;
+            }
+            
+            if (!carModel) {
+                alert('请填写车型信息');
+                return false;
+            }
+            
+            // 验证所有路段都有费用
+            const costInputs = document.querySelectorAll('.cost-input');
+            for (const input of costInputs) {
+                if (!input.value || parseFloat(input.value) <= 0) {
+                    alert('请为所有路段设置合理的费用');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // 验证乘客行程表单
+        function validatePassengerRideForm() {
+            const fromLocation = document.getElementById('passengerFromLocation').value;
+            const toLocation = document.getElementById('passengerToLocation').value;
+            const rideDate = document.getElementById('passengerRideDate').value;
+            const rideTime = document.getElementById('passengerRideTime').value;
+            const contactPhone = document.getElementById('passengerContactPhone').value;
+            
+            if (!fromLocation || !toLocation) {
+                alert('请填写出发地和目的地');
+                return false;
+            }
+            
+            if (!rideDate || !rideTime) {
+                alert('请选择出发日期和时间');
+                return false;
+            }
+            
+            if (!contactPhone || contactPhone.length !== 11) {
+                alert('请输入有效的手机号码');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 发布乘客行程
+        function publishPassengerRide() {
+            // 创建乘客行程
+            const fromLocation = document.getElementById('passengerFromLocation').value;
+            const toLocation = document.getElementById('passengerToLocation').value;
+            const rideDate = document.getElementById('passengerRideDate').value;
+            const rideTime = document.getElementById('passengerRideTime').value;
+            const passengerCount = document.getElementById('passengerCount').value;
+            const luggageCount = document.getElementById('luggageCount').value;
+            const minPrice = document.getElementById('minPrice').value;
+            const maxPrice = document.getElementById('maxPrice').value;
+            const rideDescription = document.getElementById('passengerRideDescription').value;
+            const contactPhone = document.getElementById('passengerContactPhone').value;
+            
+            // 收集特殊需求
+            const specialNeeds = [];
+            if (document.getElementById('needBabySeat').checked) specialNeeds.push('需要儿童座椅');
+            if (document.getElementById('allowSmoking').checked) specialNeeds.push('允许吸烟');
+            if (document.getElementById('allowPets').checked) specialNeeds.push('允许携带宠物');
+            if (document.getElementById('needHelp').checked) specialNeeds.push('需要帮助搬运行李');
+            
+            const newRide = {
+                id: Date.now(),
+                userId: AppState.currentUser.id,
+                identity: 'passenger',
+                from: fromLocation,
+                to: toLocation,
+                date: rideDate,
+                time: rideTime,
+                passengerCount: parseInt(passengerCount),
+                luggageCount: parseInt(luggageCount),
+                minPrice: parseFloat(minPrice) || 0,
+                maxPrice: parseFloat(maxPrice) || 0,
+                specialNeeds: specialNeeds,
+                description: rideDescription,
+                contact: contactPhone,
+                status: "waiting", // 等待司机接单
+                userName: AppState.currentUser.name,
+                userAvatar: AppState.currentUser.name.charAt(0),
+                acceptedBy: null,
+                bids: []
+            };
+            
+            // 添加到行程列表
+            sampleRides.unshift(newRide);
+            
+            // 显示成功消息
+            alert(`出行需求发布成功！等待司机接单。`);
+            
+            // 清空表单
+            document.getElementById('passengerForm').reset();
+            
+            // 设置默认日期和时间
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('passengerRideDate').value = today;
+            
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('passengerRideTime').value = `${hours}:${minutes}`;
+            
+            // 切换到首页，查看新发布的行程
+            switchPage('home');
+            document.querySelectorAll('.nav-link').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector('[data-page="home"]').classList.add('active');
+            
+            // 重新加载行程
+            loadRides();
+        }
+        
+        // 切换页面
+        function switchPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 显示目标页面
+            document.getElementById(pageId).classList.add('active');
+            
+            // 如果切换到"我的行程"页面，加载用户行程
+            if (pageId === 'my-rides') {
+                loadMyPublishedRides();
+            }
+            
+            // 如果切换到个人资料页面，加载用户信息
+            if (pageId === 'profile' && AppState.currentUser) {
+                loadProfileData();
+            }
+            
+            // 如果切换到发布页面，重新初始化路段
+            if (pageId === 'publish') {
+                initRouteSections();
+            }
+            
+            // 如果切换到通知页面，加载通知
+            if (pageId === 'notifications') {
+                loadNotifications();
+            }
+        }
+        
+        // 显示登录模态框
+        function showLoginModal() {
+            document.getElementById('loginModal').style.display = 'flex';
+        }
+        
+        // 隐藏登录模态框
+        function hideLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+        }
+        
+        // 显示支付模态框
+        function showPaymentModal() {
+            document.getElementById('paymentModal').style.display = 'flex';
+        }
+        
+        // 隐藏支付模态框
+        function hidePaymentModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+        }
+        
+        // 显示接单/报价模态框
+        function showBidModal(rideId, action) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            if (!ride) return;
+            
+            const modalTitle = document.getElementById('bidModalTitle');
+            const modalContent = document.getElementById('bidModalContent');
+            
+            if (action === 'bid' && ride.identity === 'passenger') {
+                // 司机对乘客行程报价
+                modalTitle.textContent = '报价';
+                modalContent.innerHTML = `
+                    <p>您正在对 ${ride.userName} 的出行需求进行报价：</p>
+                    <p><strong>路线：</strong>${ride.from} → ${ride.to}</p>
+                    <p><strong>时间：</strong>${ride.date} ${ride.time}</p>
+                    <p><strong>乘客人数：</strong>${ride.passengerCount}人</p>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label">您的报价（元）</label>
+                        <input type="number" class="form-control" id="bidPrice" min="${ride.minPrice}" max="${ride.maxPrice}" value="${Math.round((ride.minPrice + ride.maxPrice) / 2)}" required>
+                        <p style="color: var(--gray-color); font-size: 0.9rem; margin-top: 5px;">乘客期望价格：¥${ride.minPrice} - ¥${ride.maxPrice}</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">留言（可选）</label>
+                        <textarea class="form-control" id="bidMessage" rows="3" placeholder="例如：我有儿童座椅，可以帮忙搬运行李等"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button class="btn btn-primary" style="width: 100%; padding: 16px;" onclick="submitBid(${rideId})">
+                            <i class="fas fa-paper-plane"></i> 提交报价
+                        </button>
+                    </div>
+                `;
+            } else if (action === 'accept' && ride.identity === 'driver') {
+                // 乘客接受司机行程
+                modalTitle.textContent = '预订行程';
+                modalContent.innerHTML = `
+                    <p>您正在预订 ${ride.userName} 的行程：</p>
+                    <p><strong>路线：</strong>${ride.from} → ${ride.to}</p>
+                    <p><strong>时间：</strong>${ride.date} ${ride.time}</p>
+                    <p><strong>费用：</strong>¥${ride.totalCost}</p>
+                    <p><strong>剩余座位：</strong>${ride.seatsAvailable}个</p>
+                    
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-label">预订座位数</label>
+                        <select class="form-control" id="bookSeats">
+                            ${Array.from({length: ride.seatsAvailable}, (_, i) => i + 1)
+                                .map(num => `<option value="${num}">${num}个座位</option>`)
+                                .join('')}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">留言（可选）</label>
+                        <textarea class="form-control" id="bookingMessage" rows="3" placeholder="例如：我有行李需要帮助等"></textarea>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top: 30px;">
+                        <button class="btn btn-primary" style="width: 100%; padding: 16px;" onclick="submitBooking(${rideId})">
+                            <i class="fas fa-check-circle"></i> 确认预订
+                        </button>
+                    </div>
+                `;
+            }
+            
+            document.getElementById('bidModal').style.display = 'flex';
+        }
+        
+        // 隐藏接单/报价模态框
+        function hideBidModal() {
+            document.getElementById('bidModal').style.display = 'none';
+        }
+        
+        // 提交报价
+        function submitBid(rideId) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            const bidPrice = document.getElementById('bidPrice').value;
+            const bidMessage = document.getElementById('bidMessage').value;
+            
+            if (!bidPrice || parseFloat(bidPrice) <= 0) {
+                alert('请输入有效的报价');
+                return;
+            }
+            
+            // 添加报价
+            ride.bids.push({
+                driverId: AppState.currentUser.id,
+                driverName: AppState.currentUser.name,
+                price: parseFloat(bidPrice),
+                message: bidMessage
+            });
+            
+            // 添加通知
+            const notification = {
+                id: Date.now(),
+                userId: ride.userId,
+                title: "您的行程有新报价",
+                message: `司机${AppState.currentUser.name}对您的出行需求报价¥${bidPrice}`,
+                type: "bid",
+                rideId: ride.id,
+                time: new Date().toLocaleString(),
+                read: false
+            };
+            sampleNotifications.push(notification);
+            
+            // 关闭模态框
+            hideBidModal();
+            
+            // 显示成功消息
+            alert(`报价提交成功！乘客${ride.userName}会收到您的报价通知。`);
+            
+            // 重新加载通知（如果当前用户是乘客）
+            if (AppState.currentUser.id === ride.userId) {
+                loadNotifications();
+            }
+        }
+        
+        // 提交预订
+        function submitBooking(rideId) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            const bookSeats = parseInt(document.getElementById('bookSeats').value);
+            const bookingMessage = document.getElementById('bookingMessage').value;
+            
+            // 更新行程信息
+            ride.seatsAvailable -= bookSeats;
+            ride.bookedBy.push(AppState.currentUser.id);
+            
+            // 添加通知
+            const notification = {
+                id: Date.now(),
+                userId: ride.userId,
+                title: "有人预订了您的行程",
+                message: `乘客${AppState.currentUser.name}预订了您的行程（${ride.from}→${ride.to}），预订${bookSeats}个座位`,
+                type: "booking",
+                rideId: ride.id,
+                time: new Date().toLocaleString(),
+                read: false
+            };
+            sampleNotifications.push(notification);
+            
+            // 关闭模态框
+            hideBidModal();
+            
+            // 显示成功消息
+            alert(`预订成功！司机${ride.userName}会收到您的预订通知。`);
+            
+            // 重新加载行程
+            loadRides();
+            loadMyBookedRides();
+            
+            // 重新加载通知（如果当前用户是司机）
+            if (AppState.currentUser.id === ride.userId) {
+                loadNotifications();
+            }
+        }
+        
+        // 司机接单（接受乘客行程）
+        function acceptPassengerRide(rideId) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            if (!ride) return;
+            
+            const price = prompt(`请确认接受${ride.userName}的出行需求，并输入最终协商价格（¥${ride.minPrice}-¥${ride.maxPrice}）：`, Math.round((ride.minPrice + ride.maxPrice) / 2));
+            
+            if (!price || parseFloat(price) < ride.minPrice || parseFloat(price) > ride.maxPrice) {
+                alert('请输入有效的价格');
+                return;
+            }
+            
+            // 更新行程状态
+            ride.status = "accepted";
+            ride.acceptedBy = AppState.currentUser.id;
+            ride.acceptedPrice = parseFloat(price);
+            
+            // 添加通知
+            const notification = {
+                id: Date.now(),
+                userId: ride.userId,
+                title: "司机已接单",
+                message: `司机${AppState.currentUser.name}接受了您的出行需求，行程价格¥${price}`,
+                type: "accepted",
+                rideId: ride.id,
+                time: new Date().toLocaleString(),
+                read: false
+            };
+            sampleNotifications.push(notification);
+            
+            // 显示成功消息
+            alert(`接单成功！乘客${ride.userName}会收到您的接单通知。`);
+            
+            // 重新加载行程
+            loadRides();
+            loadMyPublishedRides();
+            
+            // 重新加载通知（如果当前用户是乘客）
+            if (AppState.currentUser.id === ride.userId) {
+                loadNotifications();
+            }
+        }
+        
+        // 处理登录
+        function handleLogin() {
+            const phone = document.getElementById('loginPhone').value;
+            const code = document.getElementById('loginCode').value;
+            
+            if (!phone || phone.length !== 11) {
+                alert('请输入有效的手机号码');
+                return;
+            }
+            
+            if (!code || code !== '123456') {
+                alert('请输入正确的验证码（测试验证码：123456）');
+                return;
+            }
+            
+            // 模拟登录成功
+            const mockUser = {
+                id: Date.now(),
+                name: "用户" + Math.floor(Math.random() * 1000),
+                phone: phone,
+                email: "user" + Math.floor(Math.random() * 1000) + "@example.com",
+                bio: "顺风车用户",
+                mainIdentity: "driver",
+                driverVerified: false,
+                vehicleInfo: null
+            };
+            
+            // 更新应用状态
+            AppState.currentUser = mockUser;
+            AppState.isLoggedIn = true;
+            
+            // 保存到本地存储
+            localStorage.setItem('carpool_user', JSON.stringify(mockUser));
+            
+            // 更新用户界面
+            updateUserInfo();
+            
+            // 关闭登录模态框
+            hideLoginModal();
+            
+            // 显示登录成功消息
+            alert(`登录成功！欢迎 ${mockUser.name}`);
+        }
+        
+        // 更新用户信息显示
+        function updateUserInfo() {
+            if (AppState.isLoggedIn && AppState.currentUser) {
+                document.getElementById('userName').textContent = AppState.currentUser.name;
+                const avatar = document.querySelector('.avatar');
+                avatar.innerHTML = `<span style="font-size: 1.2rem;">${AppState.currentUser.name.charAt(0)}</span>`;
+            } else {
+                document.getElementById('userName').textContent = '请登录';
+                const avatar = document.querySelector('.avatar');
+                avatar.innerHTML = '<i class="fas fa-user"></i>';
+            }
+        }
+        
+        // 加载行程数据
+        function loadRides() {
+            const ridesContainer = document.getElementById('ridesList');
+            const noRides = document.getElementById('noRides');
+            
+            // 根据筛选条件过滤行程
+            let filteredRides = sampleRides;
+            
+            if (AppState.activeFilter === 'driver') {
+                filteredRides = sampleRides.filter(ride => ride.identity === 'driver');
+            } else if (AppState.activeFilter === 'passenger') {
+                filteredRides = sampleRides.filter(ride => ride.identity === 'passenger');
+            } else if (AppState.activeFilter === 'available') {
+                filteredRides = sampleRides.filter(ride => ride.status === 'available' || ride.status === 'waiting');
+            }
+            
+            if (filteredRides.length === 0) {
+                ridesContainer.style.display = 'none';
+                noRides.style.display = 'block';
+                return;
+            }
+            
+            ridesContainer.style.display = 'block';
+            noRides.style.display = 'none';
+            
+            // 清空现有内容
+            ridesContainer.innerHTML = '';
+            
+            // 添加行程卡片
+            filteredRides.forEach(ride => {
+                const rideCard = createRideCard(ride);
+                ridesContainer.appendChild(rideCard);
+            });
+        }
+        
+        // 创建行程卡片
+        function createRideCard(ride) {
+            const card = document.createElement('div');
+            card.className = 'card ride-card';
+            
+            // 确定状态标签
+            let statusTag = '';
+            let statusClass = '';
+            if (ride.identity === 'driver') {
+                if (ride.status === 'available') {
+                    statusTag = '可预约';
+                    statusClass = 'status-available';
+                } else if (ride.status === 'accepted') {
+                    statusTag = '已被接单';
+                    statusClass = 'status-accepted';
+                } else if (ride.status === 'completed') {
+                    statusTag = '已完成';
+                    statusClass = 'status-completed';
+                }
+            } else {
+                if (ride.status === 'waiting') {
+                    statusTag = '等待接单';
+                    statusClass = 'status-waiting';
+                } else if (ride.status === 'accepted') {
+                    statusTag = '已被接单';
+                    statusClass = 'status-accepted';
+                } else if (ride.status === 'completed') {
+                    statusTag = '已完成';
+                    statusClass = 'status-completed';
+                }
+            }
+            
+            // 构建途经点描述
+            let waypointsText = '';
+            if (ride.waypoints && ride.waypoints.length > 0) {
+                waypointsText = `<p style="color: var(--gray-color); margin-top: 5px; font-size: 0.9rem;">
+                    途经：${ride.waypoints.join(' → ')}
+                </p>`;
+            }
+            
+            // 构建特殊需求描述
+            let specialNeedsText = '';
+            if (ride.specialNeeds && ride.specialNeeds.length > 0) {
+                specialNeedsText = `<p style="color: var(--gray-color); margin-top: 5px; font-size: 0.9rem;">
+                    特殊需求：${ride.specialNeeds.join('、')}
+                </p>`;
+            }
+            
+            // 构建费用描述
+            let costText = '';
+            if (ride.identity === 'driver') {
+                costText = `¥${ride.totalCost}/全程`;
+            } else {
+                costText = `期望：¥${ride.minPrice}-¥${ride.maxPrice}`;
+            }
+            
+            // 构建操作按钮
+            let actionButtons = '';
+            const isCurrentUserRide = AppState.isLoggedIn && ride.userId === AppState.currentUser.id;
+            const isBooked = AppState.isLoggedIn && ride.bookedBy && ride.bookedBy.includes(AppState.currentUser.id);
+            
+            if (AppState.isLoggedIn && !isCurrentUserRide) {
+                if (ride.identity === 'driver' && ride.status === 'available' && ride.seatsAvailable > 0 && !isBooked) {
+                    actionButtons = `<button class="btn btn-primary" onclick="showBidModal(${ride.id}, 'accept')">
+                        <i class="fas fa-check"></i> 预订行程
+                    </button>`;
+                } else if (ride.identity === 'passenger' && ride.status === 'waiting') {
+                    actionButtons = `<button class="btn btn-primary" onclick="showBidModal(${ride.id}, 'bid')">
+                        <i class="fas fa-dollar-sign"></i> 报价接单
+                    </button>`;
+                } else if (ride.identity === 'passenger' && ride.status === 'waiting' && AppState.currentUser.mainIdentity === 'driver') {
+                    actionButtons = `<button class="btn btn-success" onclick="acceptPassengerRide(${ride.id})">
+                        <i class="fas fa-check-circle"></i> 直接接单
+                    </button>`;
+                } else if (isBooked) {
+                    actionButtons = `<button class="btn btn-outline" style="color: var(--secondary-color);">
+                        <i class="fas fa-check"></i> 已预订
+                    </button>`;
+                }
+            }
+            
+            // 司机认证标签
+            let driverVerifiedTag = '';
+            if (ride.identity === 'driver' && ride.driverStatus === 'verified') {
+                driverVerifiedTag = `<span class="verification-status verified" style="margin-left: 0; font-size: 0.8rem; padding: 3px 8px;">
+                    <i class="fas fa-check-circle"></i> 已认证
+                </span>`;
+            }
+            
+            card.innerHTML = `
+                <div class="ride-status ${statusClass}">${statusTag}</div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="avatar" style="width: 30px; height: 30px;">
+                            <span style="font-size: 0.9rem;">${ride.userAvatar}</span>
+                        </div>
+                        <span>${ride.userName}</span>
+                        ${driverVerifiedTag}
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--primary-color);">
+                        ${ride.identity === 'driver' ? '<i class="fas fa-car"></i> 司机行程' : '<i class="fas fa-user"></i> 乘客需求'}
+                    </div>
+                </div>
+                
+                <div class="ride-route">
+                    <div class="route-point route-from">
+                        <h3>${ride.from}</h3>
+                        <p>出发地</p>
+                    </div>
+                    <div class="route-divider">
+                        <i class="fas fa-circle" style="color: var(--primary-color);"></i>
+                        <div class="route-line"></div>
+                        <i class="fas fa-map-marker-alt" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div class="route-point route-to">
+                        <h3>${ride.to}</h3>
+                        <p>目的地</p>
+                    </div>
+                </div>
+                
+                ${waypointsText}
+                ${specialNeedsText}
+                
+                <p>${ride.description}</p>
+                
+                <div class="ride-details">
+                    <div class="detail-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>${ride.date} ${ride.time}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-user-friends"></i>
+                        <span>${ride.identity === 'driver' ? `${ride.seatsAvailable}/${ride.seats}个空座` : `${ride.passengerCount}人`}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>${costText}</span>
+                    </div>
+                </div>
+                
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                    ${ride.identity === 'driver' && ride.carModel ? `
+                        <div style="color: var(--gray-color); font-size: 0.9rem;">
+                            <i class="fas fa-car"></i> ${ride.carModel}
+                        </div>
+                    ` : ''}
+                    
+                    ${actionButtons}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 加载我发布的行程
+        function loadMyPublishedRides() {
+            if (!AppState.isLoggedIn) return;
+            
+            const myRidesContainer = document.getElementById('myPublishedRides');
+            const noMyRides = document.getElementById('noMyPublishedRides');
+            
+            // 过滤当前用户发布的行程
+            const myRides = sampleRides.filter(ride => ride.userId === AppState.currentUser.id);
+            
+            if (myRides.length === 0) {
+                myRidesContainer.style.display = 'none';
+                noMyRides.style.display = 'block';
+                return;
+            }
+            
+            myRidesContainer.style.display = 'block';
+            noMyRides.style.display = 'none';
+            
+            // 清空现有内容
+            myRidesContainer.innerHTML = '';
+            
+            // 添加行程卡片
+            myRides.forEach(ride => {
+                const rideCard = createMyRideCard(ride);
+                myRidesContainer.appendChild(rideCard);
+            });
+        }
+        
+        // 加载我参与的行程
+        function loadMyBookedRides() {
+            if (!AppState.isLoggedIn) return;
+            
+            const myRidesContainer = document.getElementById('myBookedRides');
+            const noMyRides = document.getElementById('noMyBookedRides');
+            
+            // 过滤当前用户参与（预订或接单）的行程
+            const myRides = sampleRides.filter(ride => 
+                (ride.bookedBy && ride.bookedBy.includes(AppState.currentUser.id)) ||
+                ride.acceptedBy === AppState.currentUser.id ||
+                (ride.bids && ride.bids.some(bid => bid.driverId === AppState.currentUser.id))
+            );
+            
+            if (myRides.length === 0) {
+                myRidesContainer.style.display = 'none';
+                noMyRides.style.display = 'block';
+                return;
+            }
+            
+            myRidesContainer.style.display = 'block';
+            noMyRides.style.display = 'none';
+            
+            // 清空现有内容
+            myRidesContainer.innerHTML = '';
+            
+            // 添加行程卡片
+            myRides.forEach(ride => {
+                const rideCard = createMyRideCard(ride);
+                myRidesContainer.appendChild(rideCard);
+            });
+        }
+        
+        // 加载历史行程
+        function loadHistoryRides() {
+            if (!AppState.isLoggedIn) return;
+            
+            const historyContainer = document.getElementById('historyRides');
+            const noHistory = document.getElementById('noHistoryRides');
+            
+            // 这里简化处理，将所有已完成或已过期的行程视为历史行程
+            const historyRides = sampleRides.filter(ride => 
+                ride.status === 'completed' || 
+                new Date(ride.date + 'T' + ride.time) < new Date()
+            );
+            
+            if (historyRides.length === 0) {
+                historyContainer.style.display = 'none';
+                noHistory.style.display = 'block';
+                return;
+            }
+            
+            historyContainer.style.display = 'block';
+            noHistory.style.display = 'none';
+            
+            // 清空现有内容
+            historyContainer.innerHTML = '';
+            
+            // 添加历史行程
+            historyRides.forEach(ride => {
+                const historyElement = document.createElement('div');
+                historyElement.className = 'history-ride';
+                
+                historyElement.innerHTML = `
+                    <div class="history-header">
+                        <div>
+                            <strong>${ride.from} → ${ride.to}</strong>
+                            <span class="ride-status-tag ${ride.status === 'completed' ? 'status-completed' : 'status-waiting'}">
+                                ${ride.status === 'completed' ? '已完成' : '已过期'}
+                            </span>
+                        </div>
+                        <div class="history-date">${ride.date} ${ride.time}</div>
+                    </div>
+                    
+                    <p>${ride.description}</p>
+                    
+                    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                        <div style="color: var(--gray-color);">
+                            ${ride.identity === 'driver' ? 
+                                `<i class="fas fa-car"></i> 司机行程 · ¥${ride.totalCost}` : 
+                                `<i class="fas fa-user"></i> 乘客需求 · 期望¥${ride.minPrice}-¥${ride.maxPrice}`
+                            }
+                        </div>
+                        <button class="btn btn-outline" style="font-size: 0.9rem;" onclick="viewRideDetails(${ride.id})">
+                            查看详情
+                        </button>
+                    </div>
+                `;
+                
+                historyContainer.appendChild(historyElement);
+            });
+        }
+        
+        // 查看行程详情
+        function viewRideDetails(rideId) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            if (ride) {
+                let details = `行程详情：\n`;
+                details += `路线：${ride.from} → ${ride.to}\n`;
+                details += `时间：${ride.date} ${ride.time}\n`;
+                details += `发布者：${ride.userName}\n`;
+                
+                if (ride.identity === 'driver') {
+                    details += `类型：司机行程\n`;
+                    details += `车型：${ride.carModel || '未指定'}\n`;
+                    details += `费用：¥${ride.totalCost}\n`;
+                    details += `座位：${ride.seatsAvailable}/${ride.seats}个空座\n`;
+                } else {
+                    details += `类型：乘客需求\n`;
+                    details += `乘客人数：${ride.passengerCount}人\n`;
+                    details += `行李数量：${ride.luggageCount}件\n`;
+                    details += `期望价格：¥${ride.minPrice}-¥${ride.maxPrice}\n`;
+                }
+                
+                details += `状态：${ride.status === 'available' || ride.status === 'waiting' ? '可接单' : '已被接单'}\n`;
+                details += `\n描述：${ride.description}`;
+                
+                alert(details);
+            }
+        }
+        
+        // 创建我的行程卡片
+        function createMyRideCard(ride) {
+            const card = document.createElement('div');
+            card.className = 'card ride-card';
+            
+            // 确定状态标签
+            let statusTag = '';
+            let statusClass = '';
+            if (ride.identity === 'driver') {
+                if (ride.status === 'available') {
+                    statusTag = '可预约';
+                    statusClass = 'status-available';
+                } else if (ride.status === 'accepted') {
+                    statusTag = '已被接单';
+                    statusClass = 'status-accepted';
+                }
+            } else {
+                if (ride.status === 'waiting') {
+                    statusTag = '等待接单';
+                    statusClass = 'status-waiting';
+                } else if (ride.status === 'accepted') {
+                    statusTag = '已被接单';
+                    statusClass = 'status-accepted';
+                }
+            }
+            
+            // 构建操作按钮
+            let actionButtons = '';
+            const isCurrentUserRide = AppState.isLoggedIn && ride.userId === AppState.currentUser.id;
+            
+            if (isCurrentUserRide) {
+                // 自己发布的行程
+                if (ride.status === 'available' || ride.status === 'waiting') {
+                    actionButtons = `
+                        <button class="btn btn-outline" onclick="editRide(${ride.id})">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn btn-outline" style="color: var(--danger-color);" onclick="cancelRide(${ride.id})">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    `;
+                    
+                    // 如果是乘客行程且有报价，显示查看报价按钮
+                    if (ride.identity === 'passenger' && ride.bids && ride.bids.length > 0) {
+                        actionButtons = `
+                            <button class="btn btn-primary" onclick="viewBids(${ride.id})">
+                                <i class="fas fa-list"></i> 查看报价(${ride.bids.length})
+                            </button>
+                            ` + actionButtons;
+                    }
+                }
+            } else {
+                // 参与的行程
+                if (ride.status === 'accepted') {
+                    actionButtons = `
+                        <button class="btn btn-primary" onclick="contactRideOwner(${ride.id})">
+                            <i class="fas fa-phone-alt"></i> 联系${ride.identity === 'driver' ? '司机' : '乘客'}
+                        </button>
+                    `;
+                }
+            }
+            
+            card.innerHTML = `
+                <div class="ride-status ${statusClass}">${statusTag}</div>
+                <div class="ride-route">
+                    <div class="route-point route-from">
+                        <h3>${ride.from}</h3>
+                        <p>出发地</p>
+                    </div>
+                    <div class="route-divider">
+                        <i class="fas fa-circle" style="color: var(--primary-color);"></i>
+                        <div class="route-line"></div>
+                        <i class="fas fa-map-marker-alt" style="color: var(--primary-color);"></i>
+                    </div>
+                    <div class="route-point route-to">
+                        <h3>${ride.to}</h3>
+                        <p>目的地</p>
+                    </div>
+                </div>
+                
+                <p>${ride.description}</p>
+                
+                <div class="ride-details">
+                    <div class="detail-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <span>${ride.date} ${ride.time}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-user-friends"></i>
+                        <span>${ride.identity === 'driver' ? `${ride.seatsAvailable}/${ride.seats}个空座` : `${ride.passengerCount}人`}</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-money-bill-wave"></i>
+                        <span>${ride.identity === 'driver' ? `¥${ride.totalCost}/全程` : `期望：¥${ride.minPrice}-¥${ride.maxPrice}`}</span>
+                    </div>
+                </div>
+                
+                <div class="action-buttons">
+                    ${actionButtons}
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // 查看报价
+        function viewBids(rideId) {
+            const ride = sampleRides.find(r => r.id === rideId);
+            if (!ride || !ride.bids || ride.bids.length === 0) return;
+            
+            let bidsText = `对您行程的报价：\n\n`;
+            ride.bids.forEach((bid, index) => {
+                bidsText += `${index + 1}. ${bid.driverName} 报价：¥${bid.price}\n`;
+                if (bid.message) bidsText += `   留言：${bid.message}\n`;
+                bidsText += `\n`;
+            });
+            
+            const acceptBid = confirm(bidsText + "\n是否接受其中一个报价？");
+            if (acceptBid) {
+                const bidIndex = prompt("请输入要接受的报价编号（1, 2, 3...）：");
+                if (bidIndex && bidIndex >= 1 && bidIndex <= ride.bids.length) {
+                    const selectedBid = ride.bids[bidIndex - 1];
+                    ride.status = "accepted";
+                    ride.acceptedBy = selectedBid.driverId;
+                    ride.acceptedPrice = selectedBid.price;
+                    
+                    alert(`已接受 ${selectedBid.driverName} 的报价¥${selectedBid.price}`);
+                    
+                    // 重新加载行程
+                    loadMyPublishedRides();
+                }
+            }
+        }
+        
+        // 取消行程
+        function cancelRide(rideId) {
+            if (confirm('确定要取消这个行程吗？')) {
+                const index = sampleRides.findIndex(r => r.id === rideId);
+                if (index !== -1) {
+                    sampleRides.splice(index, 1);
+                    loadMyPublishedRides();
+                    loadRides();
+                    alert('行程已取消');
+                }
+            }
+        }
+        
+        // 编辑行程
+        function editRide(rideId) {
+            alert(`编辑行程 ID: ${rideId} (功能演示)`);
+        }
+        
+        // 加载个人资料数据
+        function loadProfileData() {
+            if (!AppState.currentUser) return;
+            
+            document.getElementById('profileName').value = AppState.currentUser.name || '';
+            document.getElementById('profilePhone').value = AppState.currentUser.phone || '';
+            document.getElementById('profileEmail').value = AppState.currentUser.email || '';
+            document.getElementById('profileBio').value = AppState.currentUser.bio || '';
+            document.getElementById('idCardNumber').value = AppState.currentUser.idCardNumber || '';
+            
+            // 设置主要身份
+            const mainIdentity = AppState.currentUser.mainIdentity || 'driver';
+            document.querySelector(`input[name="mainIdentity"][value="${mainIdentity}"]`).checked = true;
+            
+            // 设置车辆信息
+            if (AppState.currentUser.vehicleInfo) {
+                document.getElementById('plateNumber').value = AppState.currentUser.vehicleInfo.plateNumber || '';
+                document.getElementById('carBrand').value = AppState.currentUser.vehicleInfo.carBrand || '';
+                document.getElementById('carModelProfile').value = AppState.currentUser.vehicleInfo.carModel || '';
+                document.getElementById('carColor').value = AppState.currentUser.vehicleInfo.carColor || '';
+            }
+            
+            const avatar = document.querySelector('#avatarUpload');
+            avatar.innerHTML = `<span style="font-size: 3rem;">${AppState.currentUser.name.charAt(0)}</span>`;
+        }
+        
+        // 保存个人资料
+        function saveProfile() {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            const name = document.getElementById('profileName').value;
+            const phone = document.getElementById('profilePhone').value;
+            const email = document.getElementById('profileEmail').value;
+            const bio = document.getElementById('profileBio').value;
+            const idCardNumber = document.getElementById('idCardNumber').value;
+            const mainIdentity = document.querySelector('input[name="mainIdentity"]:checked').value;
+            
+            if (!name || !phone) {
+                alert('姓名和手机号码不能为空');
+                return;
+            }
+            
+            // 更新用户信息
+            AppState.currentUser.name = name;
+            AppState.currentUser.phone = phone;
+            AppState.currentUser.email = email;
+            AppState.currentUser.bio = bio;
+            AppState.currentUser.idCardNumber = idCardNumber;
+            AppState.currentUser.mainIdentity = mainIdentity;
+            
+            // 保存到本地存储
+            localStorage.setItem('carpool_user', JSON.stringify(AppState.currentUser));
+            
+            // 更新用户界面
+            updateUserInfo();
+            
+            alert('个人资料保存成功！');
+        }
+        
+        // 保存车辆信息
+        function saveVehicleInfo() {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            const plateNumber = document.getElementById('plateNumber').value;
+            const carBrand = document.getElementById('carBrand').value;
+            const carModel = document.getElementById('carModelProfile').value;
+            const carColor = document.getElementById('carColor').value;
+            
+            if (!plateNumber || !carBrand || !carModel) {
+                alert('请填写完整的车辆信息');
+                return;
+            }
+            
+            // 更新用户车辆信息
+            AppState.currentUser.vehicleInfo = {
+                plateNumber: plateNumber,
+                carBrand: carBrand,
+                carModel: carModel,
+                carColor: carColor
+            };
+            
+            // 保存到本地存储
+            localStorage.setItem('carpool_user', JSON.stringify(AppState.currentUser));
+            
+            alert('车辆信息保存成功！');
+        }
+        
+        // 提交认证申请
+        function submitVerification() {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            // 检查是否所有证件都已上传
+            const allUploaded = Object.values(AppState.documents).every(doc => doc.uploaded);
+            if (!allUploaded) {
+                alert('请上传所有证件后再提交认证申请');
+                return;
+            }
+            
+            // 模拟提交认证
+            const verificationStatus = document.getElementById('verificationStatus');
+            verificationStatus.className = 'verification-status verified';
+            verificationStatus.innerHTML = '<i class="fas fa-check-circle"></i> <span>已认证</span>';
+            
+            AppState.currentUser.driverVerified = true;
+            localStorage.setItem('carpool_user', JSON.stringify(AppState.currentUser));
+            
+            alert('认证申请已提交，我们将在1-3个工作日内完成审核。');
+        }
+        
+        // 确认支付
+        function confirmPayment() {
+            // 模拟支付成功
+            setTimeout(() => {
+                // 创建新行程
+                const fromLocation = document.getElementById('fromLocation').value;
+                const toLocation = document.getElementById('toLocation').value;
+                const rideDate = document.getElementById('rideDate').value;
+                const rideTime = document.getElementById('rideTime').value;
+                const seatsAvailable = document.getElementById('seatsAvailable').value;
+                const carModel = document.getElementById('carModel').value;
+                const rideDescription = document.getElementById('rideDescription').value;
+                const contactPhone = document.getElementById('contactPhone').value;
+                
+                // 收集所有路段费用
+                const costInputs = document.querySelectorAll('.cost-input');
+                const sectionCosts = Array.from(costInputs).map(input => parseFloat(input.value) || 0);
+                
+                // 计算总费用
+                const totalCost = sectionCosts.reduce((sum, cost) => sum + cost, 0);
+                
+                // 收集途经点
+                const waypoints = AppState.waypoints;
+                
+                const newRide = {
+                    id: Date.now(),
+                    userId: AppState.currentUser.id,
+                    identity: 'driver',
+                    from: fromLocation,
+                    to: toLocation,
+                    waypoints: waypoints,
+                    sectionCosts: sectionCosts,
+                    totalCost: totalCost,
+                    date: rideDate,
+                    time: rideTime,
+                    seats: parseInt(seatsAvailable),
+                    seatsAvailable: parseInt(seatsAvailable),
+                    carModel: carModel,
+                    description: rideDescription,
+                    contact: contactPhone,
+                    status: "available",
+                    driverStatus: AppState.currentUser.driverVerified ? "verified" : "unverified",
+                    userName: AppState.currentUser.name,
+                    userAvatar: AppState.currentUser.name.charAt(0),
+                    bookedBy: []
+                };
+                
+                // 添加到行程列表
+                sampleRides.unshift(newRide);
+                
+                // 关闭支付模态框
+                hidePaymentModal();
+                
+                // 显示成功消息
+                alert(`支付成功！您的行程已发布。\n总费用：¥${totalCost}\n路段数：${sectionCosts.length}`);
+                
+                // 清空表单
+                document.getElementById('rideForm').reset();
+                
+                // 设置默认日期和时间
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('rideDate').value = today;
+                
+                const now = new Date();
+                const hours = now.getHours().toString().padStart(2, '0');
+                const minutes = now.getMinutes().toString().padStart(2, '0');
+                document.getElementById('rideTime').value = `${hours}:${minutes}`;
+                
+                // 重新初始化路段
+                initRouteSections();
+                
+                // 切换到首页，查看新发布的行程
+                switchPage('home');
+                document.querySelectorAll('.nav-link').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.querySelector('[data-page="home"]').classList.add('active');
+                
+                // 重新加载行程
+                loadRides();
+            }, 1500);
+        }
+        
+        // 联系车主/乘客
+        function contactRideOwner(rideId) {
+            if (!AppState.isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            const ride = sampleRides.find(r => r.id === rideId);
+            if (ride) {
+                alert(`联系${ride.identity === 'driver' ? '司机' : '乘客'}：${ride.contact}\n姓名：${ride.userName}\n请说明您是通过顺风车平台联系的`);
+            }
+        }
+        
+        // 删除行程
+        function deleteRide(rideId) {
+            if (confirm('确定要删除这个行程吗？')) {
+                const index = sampleRides.findIndex(r => r.id === rideId);
+                if (index !== -1) {
+                    sampleRides.splice(index, 1);
+                    loadMyPublishedRides();
+                    alert('行程已删除');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
