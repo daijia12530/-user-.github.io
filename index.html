@@ -2,278 +2,2184 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>城际出行购票 - 微信公众号版</title>
-    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6.5.0/turf.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="忻城-柳州城际出行系统 - 微信端专用">
+    <meta name="author" content="城际出行系统">
+    <title>城际出行系统 | 忻城-柳州专线</title>
+    
+    <!-- PWA配置 -->
+    <meta name="theme-color" content="#667eea">
+    <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;城际出行系统&quot;,&quot;short_name&quot;:&quot;城际出行&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;background_color&quot;:&quot;#667eea&quot;,&quot;theme_color&quot;:&quot;#667eea&quot;}">
+    
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: "PingFang SC", "Helvetica Neue", sans-serif; }
-        body { background-color: #f5f5f5; padding: 15px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; font-size: 18px; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #34495e; font-size: 14px; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
-        button { width: 100%; padding: 14px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        button:hover { background: #219653; }
-        #priceResult { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center; font-size: 15px; color: #e74c3c; font-weight: bold; }
-        #payCode { margin: 20px 0; text-align: center; display: none; }
-        #payCode img { width: 250px; height: 250px; border: 1px solid #eee; padding: 10px; border-radius: 8px; }
-        .nav-btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .nav-btn { flex: 1; padding: 10px; background: #3498db; font-size: 14px; }
-        .admin-panel { margin-top: 30px; padding-top: 20px; border-top: 1px dashed #ddd; display: none; }
-        .order-count { text-align: center; margin: 10px 0; color: #7f8c8d; font-size: 14px; }
-        .hidden { display: none; }
+        /* ===== 基础样式重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        html {
+            font-size: 14px;
+            height: 100%;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            line-height: 1.5;
+            color: #333;
+            background: #f5f5f5;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* ===== 通用组件 ===== */
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 100;
+        }
+        
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 10px;
+            color: #999;
+            text-decoration: none;
+            padding: 5px;
+            flex: 1;
+        }
+        
+        .tab-item.active {
+            color: #667eea;
+        }
+        
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 3px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+        
+        @keyframes modalIn {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-title {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 15px;
+        }
+        
+        .modal-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* ===== 登录页面样式 ===== */
+        .login-page {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        
+        .login-logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-logo h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        
+        .login-logo p {
+            opacity: 0.9;
+        }
+        
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .login-tabs {
+            display: flex;
+            background: #f8f9fa;
+        }
+        
+        .login-tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+        }
+        
+        .login-tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        
+        .login-form {
+            padding: 30px;
+            display: none;
+        }
+        
+        .login-form.active {
+            display: block;
+        }
+        
+        /* ===== 乘客端样式 ===== */
+        .passenger-content {
+            padding-bottom: 70px;
+        }
+        
+        .route-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .route-btn {
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border: 1px solid #eee;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        .route-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .price-display {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .price-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .price-value {
+            font-size: 36px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .price-details {
+            margin: 15px 0;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .price-row.total {
+            border-bottom: none;
+            border-top: 2px solid #667eea;
+            font-weight: bold;
+            padding-top: 12px;
+            margin-top: 8px;
+        }
+        
+        .order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .order-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .order-id {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .order-status {
+            font-size: 12px;
+            padding: 3px 8px;
+            border-radius: 10px;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .order-route {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .order-time {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* ===== 司机端样式 ===== */
+        .driver-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .route-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .route-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .route-info h4 {
+            margin-bottom: 5px;
+        }
+        
+        .route-path {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .route-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .price-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        /* ===== 聊天页面样式 ===== */
+        .chat-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: #f0f0f0;
+        }
+        
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .chat-back {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        
+        .chat-title {
+            flex: 1;
+            font-weight: bold;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        .message.received {
+            align-self: flex-start;
+            background: white;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .message.sent {
+            align-self: flex-end;
+            background: #95ec69;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .message-system {
+            align-self: center;
+            background: rgba(0,0,0,0.1);
+            color: #666;
+            font-size: 12px;
+            padding: 5px 15px;
+            border-radius: 10px;
+        }
+        
+        .message-time {
+            font-size: 10px;
+            color: #999;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .chat-input-area {
+            background: white;
+            padding: 10px 15px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .chat-input {
+            flex: 1;
+            border: 2px solid #eee;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            resize: none;
+        }
+        
+        .send-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        /* ===== 支付页面样式 ===== */
+        .payment-page {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .payment-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .payment-amount {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .amount-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        .payment-methods {
+            margin: 20px 0;
+        }
+        
+        .method-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        
+        .method-item.active {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .method-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 20px;
+            color: white;
+        }
+        
+        .method-icon.wechat {
+            background: #07c160;
+        }
+        
+        .method-icon.alipay {
+            background: #108ee9;
+        }
+        
+        .method-icon.cash {
+            background: #f0ad4e;
+        }
+        
+        .method-info {
+            flex: 1;
+        }
+        
+        .method-name {
+            font-weight: bold;
+        }
+        
+        .method-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .qr-code-container {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 15px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-tips {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* ===== 响应式调整 ===== */
+        @media (min-width: 768px) {
+            .container {
+                max-width: 768px;
+                margin: 0 auto;
+                box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            }
+            
+            .tab-bar {
+                max-width: 768px;
+                margin: 0 auto;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+        }
+        
+        /* ===== 状态指示器 ===== */
+        .status-online {
+            color: #28a745;
+        }
+        
+        .status-offline {
+            color: #dc3545;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>城际出行在线购票</h2>
+        <!-- 登录页面 -->
+        <div class="page active" id="loginPage">
+            <div class="login-page">
+                <div class="login-logo">
+                    <h1>城际出行系统</h1>
+                    <p>忻城-柳州专线 | 微信端专用</p>
+                </div>
+                
+                <div class="login-card">
+                    <div class="login-tabs">
+                        <button class="login-tab active" onclick="switchLoginTab('passenger')">乘客端</button>
+                        <button class="login-tab" onclick="switchLoginTab('driver')">司机端</button>
+                    </div>
+                    
+                    <!-- 乘客登录表单 -->
+                    <div class="login-form active" id="passengerLoginForm">
+                        <form id="passengerLogin" onsubmit="loginAsPassenger(event)">
+                            <div class="form-group">
+                                <label class="form-label">手机号码</label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="tel" class="form-control" placeholder="请输入手机号" required pattern="1[0-9]{10}">
+                                    <button type="button" class="btn btn-secondary" onclick="sendSMSCode()" style="min-width: 100px;">获取验证码</button>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">验证码</label>
+                                <input type="text" class="form-control" placeholder="请输入短信验证码" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">常用地址（可选）</label>
+                                <input type="text" class="form-control" placeholder="如：忻城县人民医院">
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">进入乘客端</button>
+                        </form>
+                        
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button class="btn btn-secondary btn-block" onclick="quickLogin('passenger')">快速体验（免登录）</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 司机登录表单 -->
+                    <div class="login-form" id="driverLoginForm">
+                        <form id="driverLogin" onsubmit="loginAsDriver(event)">
+                            <div class="form-group">
+                                <label class="form-label">司机编号</label>
+                                <input type="text" class="form-control" placeholder="请输入司机编号" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">车牌号码</label>
+                                <input type="text" class="form-control" placeholder="如：桂B12345" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">密码</label>
+                                <input type="password" class="form-control" placeholder="请输入密码" required>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-block">进入司机端</button>
+                        </form>
+                        
+                        <div style="margin-top: 20px; text-align: center; font-size: 12px; color: #666;">
+                            <p>新司机请联系管理员注册</p>
+                            <p>电话：0772-XXXXXXX</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px; text-align: center; color: rgba(255,255,255,0.9);">
+                    <p>建议收藏到微信，方便下次使用</p>
+                    <p style="font-size: 12px;">点击右上角 ··· → 收藏</p>
+                </div>
+            </div>
+        </div>
         
-        <!-- 乘客购票区 -->
-        <div class="form-group">
-            <label>选择出发地</label>
-            <select id="startPoint">
-                <option value="A">A点 - 忻城县人民医院</option>
-                <option value="A1">A1点 - 古蓬镇</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>选择目的地类型</label>
-            <select id="destType">
-                <option value="B">B点 - 柳州柳堡加油站</option>
-                <option value="B1">B1点（超B点短途）</option>
-                <option value="B2">B2点（超B点长途）</option>
-            </select>
-        </div>
-        <div class="form-group" id="extraKmGroup" class="hidden">
-            <label>超B/B1点额外公里数</label>
-            <input type="number" id="extraKm" placeholder="请输入额外公里数" min="0">
-        </div>
-
-        <button onclick="calculatePrice()">计算票价</button>
-        <div id="priceResult">请计算票价后购票</div>
-        <button onclick="showPayCode()">确认购票（展示收款码）</button>
-
-        <!-- 收款码展示区 -->
-        <div id="payCode">
-            <p>请扫码支付，支付后联系司机确认</p >
-            < img id="codeImg" src="" alt="司机收款码">
-        </div>
-
-        <!-- 司机导航区 -->
-        <div class="admin-panel" id="driverNav">
-            <h3 style="font-size:16px; margin:15px 0;">司机导航</h3>
-            <div class="nav-btn-group">
-                <button class="nav-btn" onclick="openGaodeMap()">高德地图</button>
-                <button class="nav-btn" onclick="openTencentMap()">腾讯地图</button>
-                <button class="nav-btn" onclick="openBaiduMap()">百度地图</button>
+        <!-- 乘客端页面 -->
+        <div class="page" id="passengerPage">
+            <div class="header">
+                <h1>乘客端 - 城际出行</h1>
             </div>
-            <div class="order-count">当前订单数：<span id="orderCount">0</span> / 100</div>
-            <div class="order-count" id="modifyTip"></div>
+            
+            <div class="passenger-content">
+                <!-- 当前位置 -->
+                <div class="card">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="font-size: 20px;">📍</div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 12px; color: #666;">当前位置</div>
+                            <div id="currentLocation">定位中...</div>
+                        </div>
+                        <button class="btn btn-small btn-secondary" onclick="refreshLocation()">刷新</button>
+                    </div>
+                </div>
+                
+                <!-- 路线选择 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">选择路线</h3>
+                    <div class="route-selector">
+                        <button class="route-btn active" onclick="selectRoute('xincheng-liuzhou')">忻城→柳州</button>
+                        <button class="route-btn" onclick="selectRoute('liuzhou-xincheng')">柳州→忻城</button>
+                        <button class="route-btn" onclick="selectRoute('xincheng-laibin')">忻城→来宾北</button>
+                        <button class="route-btn" onclick="selectRoute('gupeng-xincheng')">古蓬→忻城</button>
+                        <button class="route-btn" onclick="selectRoute('custom')">自定义</button>
+                    </div>
+                </div>
+                
+                <!-- 目的地输入 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">目的地设置</h3>
+                    <div class="form-group">
+                        <label class="form-label">目的地地址</label>
+                        <input type="text" class="form-control" id="destinationInput" placeholder="请输入详细地址，如：柳州火车站" oninput="updateDestination()">
+                    </div>
+                    
+                    <div class="form-group" id="extraDistanceGroup" style="display: none;">
+                        <label class="form-label">额外距离 <span id="distanceValue">0</span>公里</label>
+                        <input type="range" class="form-control" id="extraDistance" min="0" max="100" value="0" oninput="updateDistanceValue(this.value)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">具体位置说明</label>
+                        <textarea class="form-textarea" id="locationNote" placeholder="如：在出站口等候、小区门口等"></textarea>
+                    </div>
+                </div>
+                
+                <!-- 价格计算 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">价格计算</h3>
+                    <div class="price-display">
+                        <div class="price-label">预估价格</div>
+                        <div class="price-value" id="totalPrice">¥50.00</div>
+                    </div>
+                    
+                    <div class="price-details">
+                        <div class="price-row">
+                            <span>基础票价</span>
+                            <span id="basePrice">¥50.00</span>
+                        </div>
+                        <div class="price-row">
+                            <span>额外距离费用</span>
+                            <span id="extraPrice">¥0.00</span>
+                        </div>
+                        <div class="price-row total">
+                            <span>总计</span>
+                            <span id="finalPrice">¥50.00</span>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-secondary" style="margin-right: 10px;" onclick="resetBooking()">重置</button>
+                        <button class="btn btn-primary" onclick="showDrivers()">查看可用司机</button>
+                    </div>
+                </div>
+                
+                <!-- 司机列表 -->
+                <div class="card" id="driversCard" style="display: none;">
+                    <h3 style="margin-bottom: 15px;">可用司机</h3>
+                    <div id="driversList">
+                        <!-- 动态加载司机列表 -->
+                    </div>
+                </div>
+                
+                <!-- 我的订单 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">我的订单</h3>
+                    <div class="order-list" id="passengerOrders">
+                        <!-- 动态加载订单 -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 乘客端底部导航 -->
+            <div class="tab-bar">
+                <a class="tab-item active" onclick="switchPassengerTab('home')">
+                    <span class="tab-icon">🏠</span>
+                    <span>首页</span>
+                </a>
+                <a class="tab-item" onclick="switchPassengerTab('orders')">
+                    <span class="tab-icon">📋</span>
+                    <span>订单</span>
+                </a>
+                <a class="tab-item" onclick="openChat('passenger')">
+                    <span class="tab-icon">💬</span>
+                    <span>消息</span>
+                    <span id="unreadCount" style="position: absolute; top: 0; right: 10px; background: red; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: none;">0</span>
+                </a>
+                <a class="tab-item" onclick="switchPassengerTab('profile')">
+                    <span class="tab-icon">👤</span>
+                    <span>我的</span>
+                </a>
+            </div>
         </div>
-
-        <!-- 管理员登录区 -->
-        <div class="admin-panel" id="adminLogin">
-            <h3 style="font-size:16px; margin:15px 0;">管理员登录</h3>
-            <div class="form-group">
-                <label>账号</label>
-                <input type="text" id="adminUser" placeholder="管理员账号">
+        
+        <!-- 司机端页面 -->
+        <div class="page" id="driverPage">
+            <div class="header">
+                <h1>司机工作台</h1>
             </div>
-            <div class="form-group">
-                <label>密码</label>
-                <input type="password" id="adminPwd" placeholder="管理员密码">
+            
+            <div style="padding: 15px; padding-bottom: 70px;">
+                <!-- 今日统计 -->
+                <div class="driver-stats">
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayOrders">0</div>
+                        <div class="stat-label">今日订单</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="todayIncome">¥0</div>
+                        <div class="stat-label">今日收入</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="driverRating">5.0</div>
+                        <div class="stat-label">服务评分</div>
+                    </div>
+                    <div class="stat-card" onclick="showWithdraw()">
+                        <div class="stat-value" id="driverBalance">¥0</div>
+                        <div class="stat-label">可提现</div>
+                    </div>
+                </div>
+                
+                <!-- 司机状态 -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="margin-bottom: 5px;">接单状态</h3>
+                            <div id="driverStatusText" class="status-online">● 在线接单中</div>
+                        </div>
+                        <button class="btn" id="toggleStatusBtn" onclick="toggleDriverStatus()">停止接单</button>
+                    </div>
+                </div>
+                
+                <!-- 我的路线 -->
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">我的路线</h3>
+                        <button class="btn btn-small btn-primary" onclick="showAddRouteModal()">+ 添加路线</button>
+                    </div>
+                    
+                    <div class="route-list" id="driverRoutes">
+                        <!-- 动态加载路线 -->
+                    </div>
+                </div>
+                
+                <!-- 价格设置 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">价格设置</h3>
+                    <div class="price-settings">
+                        <div class="setting-row">
+                            <span>基础价格（元）</span>
+                            <input type="number" class="form-control" style="width: 80px;" id="driverBasePrice" value="50" min="30" max="200" onchange="saveDriverSettings()">
+                        </div>
+                        <div class="setting-row">
+                            <span>额外里程费（元/公里）</span>
+                            <input type="number" step="0.1" class="form-control" style="width: 80px;" id="driverExtraRate" value="0.8" min="0.5" max="2" onchange="saveDriverSettings()">
+                        </div>
+                        <div class="setting-row">
+                            <span>节假日加价比例</span>
+                            <input type="number" class="form-control" style="width: 80px;" id="driverHolidayRate" value="20" min="0" max="50" onchange="saveDriverSettings()">%
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 当前订单 -->
+                <div class="card">
+                    <h3 style="margin-bottom: 15px;">当前订单</h3>
+                    <div class="order-list" id="driverCurrentOrders">
+                        <!-- 动态加载订单 -->
+                    </div>
+                </div>
             </div>
-            <button onclick="adminLogin()">登录</button>
+            
+            <!-- 司机端底部导航 -->
+            <div class="tab-bar">
+                <a class="tab-item active" onclick="switchDriverTab('home')">
+                    <span class="tab-icon">🏠</span>
+                    <span>工作台</span>
+                </a>
+                <a class="tab-item" onclick="switchDriverTab('orders')">
+                    <span class="tab-icon">📦</span>
+                    <span>订单管理</span>
+                </a>
+                <a class="tab-item" onclick="openChat('driver')">
+                    <span class="tab-icon">💬</span>
+                    <span>消息</span>
+                    <span id="driverUnreadCount" style="position: absolute; top: 0; right: 10px; background: red; color: white; font-size: 10px; width: 16px; height: 16px; border-radius: 50%; display: none;">0</span>
+                </a>
+                <a class="tab-item" onclick="switchDriverTab('profile')">
+                    <span class="tab-icon">👤</span>
+                    <span>我的</span>
+                </a>
+            </div>
         </div>
-
-        <!-- 管理员操作区 -->
-        <div class="admin-panel" id="adminPanel">
-            <h3 style="font-size:16px; margin:15px 0;">司机资料管理</h3>
-            <div class="form-group">
-                <label>上传司机收款码（图片）</label>
-                <input type="file" id="codeFile" accept="image/*">
+        
+        <!-- 聊天页面 -->
+        <div class="page" id="chatPage">
+            <div class="chat-container">
+                <div class="chat-header">
+                    <button class="chat-back" onclick="goBackFromChat()">‹</button>
+                    <div class="chat-title" id="chatWith">司机 李师傅</div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                    <!-- 消息动态加载 -->
+                    <div class="message system">系统：开始聊天吧！</div>
+                </div>
+                
+                <div class="chat-input-area">
+                    <textarea class="chat-input" id="messageInput" placeholder="输入消息..." rows="1" oninput="adjustChatInput()"></textarea>
+                    <button class="send-btn" id="sendMessageBtn" onclick="sendMessage()" disabled>›</button>
+                </div>
             </div>
-            <div class="form-group">
-                <label>更新订单数</label>
-                <input type="number" id="updateOrderCount" placeholder="输入当前订单数" min="0">
+        </div>
+        
+        <!-- 支付页面 -->
+        <div class="page" id="paymentPage">
+            <div class="payment-page">
+                <div class="payment-card">
+                    <div class="payment-amount">
+                        <div class="amount-label">支付金额</div>
+                        <div class="amount" id="paymentAmount">¥65.00</div>
+                    </div>
+                    
+                    <div class="payment-methods">
+                        <h3 style="margin-bottom: 15px;">选择支付方式</h3>
+                        
+                        <div class="method-item active" onclick="selectPaymentMethod('wechat')">
+                            <div class="method-icon wechat">💰</div>
+                            <div class="method-info">
+                                <div class="method-name">微信支付</div>
+                                <div class="method-desc">推荐微信用户使用</div>
+                            </div>
+                            <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 50%; position: relative;">
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 10px; height: 10px; background: #667eea; border-radius: 50%;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="method-item" onclick="selectPaymentMethod('alipay')">
+                            <div class="method-icon alipay">💰</div>
+                            <div class="method-info">
+                                <div class="method-name">支付宝</div>
+                                <div class="method-desc">推荐支付宝用户使用</div>
+                            </div>
+                            <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 50%;"></div>
+                        </div>
+                        
+                        <div class="method-item" onclick="selectPaymentMethod('cash')">
+                            <div class="method-icon cash">💵</div>
+                            <div class="method-info">
+                                <div class="method-name">现金支付</div>
+                                <div class="method-desc">乘车时支付给司机</div>
+                            </div>
+                            <div style="width: 20px; height: 20px; border: 2px solid #ddd; border-radius: 50%;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- 微信支付二维码 -->
+                    <div class="qr-code-container" id="wechatQR">
+                        <div class="qr-tips">请使用微信扫描二维码完成支付</div>
+                        <div class="qr-code">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">示例二维码</div>
+                                <div style="width: 160px; height: 160px; background: #f0f0f0; border-radius: 4px; margin: 0 auto;"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button class="btn btn-secondary" onclick="uploadQRCode('wechat')">上传收款码</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 支付宝二维码 -->
+                    <div class="qr-code-container" id="alipayQR" style="display: none;">
+                        <div class="qr-tips">请使用支付宝扫描二维码完成支付</div>
+                        <div class="qr-code">
+                            <div style="text-align: center;">
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px;">示例二维码</div>
+                                <div style="width: 160px; height: 160px; background: #f0f0f0; border-radius: 4px; margin: 0 auto;"></div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button class="btn btn-secondary" onclick="uploadQRCode('alipay')">上传收款码</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 现金支付说明 -->
+                    <div id="cashInstructions" style="display: none; padding: 15px; background: #fff8e1; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="margin-bottom: 10px; color: #f0ad4e;">现金支付说明</h4>
+                        <ul style="font-size: 13px; color: #666; line-height: 1.6;">
+                            <li>1. 请在上车时向司机支付车费</li>
+                            <li>2. 建议准备零钱，方便找零</li>
+                            <li>3. 支付后请向司机索要收据</li>
+                            <li>4. 如遇问题，请及时联系客服</li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin-top: 30px;">
+                        <button class="btn btn-primary btn-block" onclick="processPayment()">确认支付</button>
+                        <div style="text-align: center; margin-top: 10px; font-size: 12px; color: #666;">
+                            支付剩余时间: <span style="color: #e74c3c; font-weight: bold;" id="paymentCountdown">15:00</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <button onclick="uploadDriverInfo()">保存司机信息</button>
-            <button onclick="resetAdmin()">退出登录</button>
         </div>
     </div>
-
+    
+    <!-- 添加路线模态框 -->
+    <div class="modal" id="addRouteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">添加新路线</div>
+                <button class="modal-close" onclick="closeModal('addRouteModal')">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <form id="routeForm" onsubmit="saveRoute(event)">
+                    <div class="form-group">
+                        <label class="form-label">路线名称</label>
+                        <input type="text" class="form-control" placeholder="如：忻城→柳州往返线" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">起点</label>
+                        <select class="form-select" id="routeStart" onchange="updateRoutePoints()">
+                            <option value="xincheng">忻城县</option>
+                            <option value="gupeng">古蓬镇</option>
+                            <option value="liuzhou">柳州市区</option>
+                            <option value="laibin">来宾北站</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                        <input type="text" class="form-control" id="customStart" placeholder="请输入起点" style="display: none; margin-top: 5px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">终点</label>
+                        <select class="form-select" id="routeEnd" onchange="updateRoutePoints()">
+                            <option value="liuzhou">柳州市区</option>
+                            <option value="xincheng">忻城县</option>
+                            <option value="gupeng">古蓬镇</option>
+                            <option value="laibin">来宾北站</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                        <input type="text" class="form-control" id="customEnd" placeholder="请输入终点" style="display: none; margin-top: 5px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">是否为往返线</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="isRoundTrip" onchange="toggleReturnSettings()">
+                            <span>是</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="returnSettings" style="display: none;">
+                        <label class="form-label">返程间隔（小时）</label>
+                        <input type="number" class="form-control" min="1" max="24" value="2">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">发车时间</label>
+                        <input type="time" class="form-control" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">座位数</label>
+                        <input type="number" class="form-control" min="1" max="15" value="7" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">路线说明</label>
+                        <textarea class="form-textarea" placeholder="如：途经高速、提供矿泉水等"></textarea>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('addRouteModal')">取消</button>
+                        <button type="submit" class="btn btn-primary">保存路线</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 上传二维码模态框 -->
+    <div class="modal" id="uploadQRModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">上传收款码</div>
+                <button class="modal-close" onclick="closeModal('uploadQRModal')">&times;</button>
+            </div>
+            
+            <div class="modal-body">
+                <div id="uploadQRType" style="margin-bottom: 15px; font-weight: bold;"></div>
+                
+                <div style="text-align: center; margin: 20px 0;">
+                    <input type="file" id="qrFileInput" accept="image/*" style="display: none;" onchange="handleQRUpload(event)">
+                    <button class="btn btn-primary" onclick="document.getElementById('qrFileInput').click()">选择图片</button>
+                </div>
+                
+                <div style="font-size: 12px; color: #666; text-align: center;">
+                    <p>支持格式：JPG、PNG、GIF</p>
+                    <p>建议大小：不超过2MB</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 支付成功模态框 -->
+    <div class="modal" id="paymentSuccessModal">
+        <div class="modal-content">
+            <div class="modal-body" style="text-align: center; padding: 40px 20px;">
+                <div style="width: 60px; height: 60px; background: #28a745; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; margin: 0 auto 20px;">✓</div>
+                <h3 style="margin-bottom: 10px;">支付成功！</h3>
+                <p style="color: #666; margin-bottom: 30px;">订单已确认，司机将尽快联系您</p>
+                <button class="btn btn-primary" onclick="closePaymentSuccess()">完成</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
-        // 固定点位坐标 [lng, lat] - Turf.js 格式
-        const POINTS = {
-            A: turf.point([108.6812, 24.0856]),
-            A1: turf.point([108.5234, 24.1567]),
-            B: turf.point([109.3678, 24.2134])
-        };
-        // 基础价格配置
-        const PRICE_RULES = {
-            A_TO_B: 50,
-            A1_TO_B: 60,
-            A_TO_B1: 60,
-            EXTRA_0_20: 0.8,
-            EXTRA_20_PLUS: 0.7,
-            A1_B_OVER_120: 0.61,
-            LIMIT_120: 120,
-            LIMIT_20: 20
-        };
-        // 全局状态
-        let adminStatus = false;
-        let driverCode = localStorage.getItem('driverCode') || '';
-        let orderCount = parseInt(localStorage.getItem('orderCount')) || 0;
-        let lastModifyTime = localStorage.getItem('lastModifyTime') || 0;
-
-        // 初始化
-        window.onload = function() {
-            document.getElementById('orderCount').innerText = orderCount;
-            checkModifyPermission();
-            // 显示管理员登录入口
-            document.getElementById('adminLogin').style.display = 'block';
-            // 监听目的地类型变化
-            document.getElementById('destType').addEventListener('change', function(e) {
-                if (e.target.value !== 'B') {
-                    document.getElementById('extraKmGroup').style.display = 'block';
-                } else {
-                    document.getElementById('extraKmGroup').style.display = 'none';
-                }
+        // ===== 全局变量 =====
+        let currentPage = 'login';
+        let currentUser = null;
+        let currentRoute = 'xincheng-liuzhou';
+        let paymentTimer = null;
+        let paymentTimeLeft = 15 * 60; // 15分钟
+        let chatMessages = [];
+        let currentChatWith = null;
+        let currentPaymentMethod = 'wechat';
+        
+        // ===== 页面切换函数 =====
+        function showPage(pageId) {
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
             });
-        };
-
-        // 1. 票价计算核心逻辑
-        function calculatePrice() {
-            const start = document.getElementById('startPoint').value;
-            const destType = document.getElementById('destType').value;
-            const extraKm = parseFloat(document.getElementById('extraKm').value) || 0;
-            let totalPrice = 0;
-            let distanceAB = turf.distance(POINTS[start], POINTS.B, {units: 'kilometers'});
-
-            // 规则1: A/A1到B点基础价
-            if (destType === 'B') {
-                totalPrice = start === 'A' ? PRICE_RULES.A_TO_B : PRICE_RULES.A1_TO_B;
-                // 规则3: A1→B超120公里重新计费
-                if (start === 'A1' && distanceAB > PRICE_RULES.LIMIT_120) {
-                    totalPrice = distanceAB * PRICE_RULES.A1_B_OVER_120;
-                }
-            } else {
-                // 规则2: 到B1/B2点（超B点）
-                totalPrice = start === 'A' ? PRICE_RULES.A_TO_B1 : PRICE_RULES.A1_TO_B;
-                let extraPrice = 0;
-                if (extraKm <= PRICE_RULES.LIMIT_20) {
-                    extraPrice = extraKm * PRICE_RULES.EXTRA_0_20;
-                } else {
-                    extraPrice = PRICE_RULES.LIMIT_20 * PRICE_RULES.EXTRA_0_20 + (extraKm - PRICE_RULES.LIMIT_20) * PRICE_RULES.EXTRA_20_PLUS;
-                }
-                totalPrice += extraPrice;
+            
+            // 显示目标页面
+            document.getElementById(pageId + 'Page').classList.add('active');
+            currentPage = pageId;
+            
+            // 页面特定的初始化
+            if (pageId === 'passenger') {
+                initPassengerPage();
+            } else if (pageId === 'driver') {
+                initDriverPage();
+            } else if (pageId === 'payment') {
+                startPaymentTimer();
             }
-
-            document.getElementById('priceResult').innerText = `最终票价：${totalPrice.toFixed(2)} 元`;
         }
-
-        // 2. 展示收款码
-        function showPayCode() {
-            const payCode = document.getElementById('payCode');
-            if (!driverCode) {
-                alert('司机收款码未上传，请联系管理员！');
+        
+        function switchLoginTab(tab) {
+            // 切换登录标签
+            document.querySelectorAll('.login-tab').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 切换表单
+            document.querySelectorAll('.login-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            document.getElementById(tab + 'LoginForm').classList.add('active');
+        }
+        
+        // ===== 登录功能 =====
+        function sendSMSCode() {
+            const phone = document.querySelector('#passengerLoginForm input[type="tel"]').value;
+            
+            if (!/^1[0-9]{10}$/.test(phone)) {
+                alert('请输入正确的手机号码');
                 return;
             }
-            document.getElementById('codeImg').src = driverCode;
-            payCode.style.display = 'block';
-            // 模拟订单计数+1
-            if (adminStatus) {
-                updateOrderCount(1);
-            }
+            
+            const btn = event.target;
+            btn.disabled = true;
+            btn.innerHTML = '60秒后重试';
+            
+            let seconds = 60;
+            const timer = setInterval(() => {
+                seconds--;
+                btn.innerHTML = `${seconds}秒后重试`;
+                
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.innerHTML = '获取验证码';
+                }
+            }, 1000);
+            
+            // 模拟发送验证码
+            console.log('发送验证码到:', phone);
         }
-
-        // 3. 司机导航跳转
-        function openGaodeMap() {
-            const start = document.getElementById('startPoint').value;
-            const startName = start === 'A' ? '忻城县人民医院' : '古蓬镇';
-            window.open(`https://amap.com/navigation?from=${POINTS[start].geometry.coordinates[1]},${POINTS[start].geometry.coordinates[0]}&to=${POINTS.B.geometry.coordinates[1]},${POINTS.B.geometry.coordinates[0]}&name=${startName}到柳州柳堡加油站`, '_blank');
-        }
-        function openTencentMap() {
-            const start = document.getElementById('startPoint').value;
-            window.open(`https://map.qq.com/navigation.html?type=drive&from=${POINTS[start].geometry.coordinates[1]},${POINTS[start].geometry.coordinates[0]}&to=${POINTS.B.geometry.coordinates[1]},${POINTS.B.geometry.coordinates[0]}`, '_blank');
-        }
-        function openBaiduMap() {
-            const start = document.getElementById('startPoint').value;
-            window.open(`https://map.baidu.com/direction?origin=${POINTS[start].geometry.coordinates[1]},${POINTS[start].geometry.coordinates[0]}&destination=${POINTS.B.geometry.coordinates[1]},${POINTS.B.geometry.coordinates[0]}&mode=driving`, '_blank');
-        }
-
-        // 4. 管理员登录
-        function adminLogin() {
-            const user = document.getElementById('adminUser').value;
-            const pwd = document.getElementById('adminPwd').value;
-            if (user === 'adim' && pwd === '88888888') {
-                adminStatus = true;
-                document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('driverNav').style.display = 'block';
-                document.getElementById('adminLogin').style.display = 'none';
-                alert('管理员登录成功！');
-            } else {
-                alert('账号或密码错误！');
-            }
-        }
-
-        // 5. 上传司机资料&收款码
-        function uploadDriverInfo() {
-            const file = document.getElementById('codeFile').files[0];
-            if (!file) {
-                alert('请选择收款码图片！');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                driverCode = e.target.result;
-                localStorage.setItem('driverCode', driverCode);
-                alert('收款码上传成功！');
+        
+        function loginAsPassenger(e) {
+            e.preventDefault();
+            const phone = e.target.querySelector('input[type="tel"]').value;
+            const code = e.target.querySelector('input[placeholder="请输入短信验证码"]').value;
+            const address = e.target.querySelector('input[placeholder="如：忻城县人民医院"]').value;
+            
+            // 保存用户信息
+            currentUser = {
+                type: 'passenger',
+                phone: phone,
+                address: address,
+                loginTime: new Date().toISOString()
             };
-            reader.readAsDataURL(file);
-            // 更新订单数
-            const newCount = parseInt(document.getElementById('updateOrderCount').value) || 0;
-            localStorage.setItem('orderCount', newCount);
-            orderCount = newCount;
-            document.getElementById('orderCount').innerText = orderCount;
-            checkModifyPermission();
+            
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            
+            // 跳转到乘客端
+            showPage('passenger');
         }
-
-        // 6. 订单数更新&修改权限检查
-        function updateOrderCount(num) {
-            orderCount += num;
-            orderCount = Math.min(orderCount, 100);
-            localStorage.setItem('orderCount', orderCount);
-            document.getElementById('orderCount').innerText = orderCount;
-            checkModifyPermission();
+        
+        function loginAsDriver(e) {
+            e.preventDefault();
+            const driverId = e.target.querySelector('input[placeholder="请输入司机编号"]').value;
+            const plate = e.target.querySelector('input[placeholder="如：桂B12345"]').value;
+            const password = e.target.querySelector('input[type="password"]').value;
+            
+            // 验证司机信息
+            if (driverId && plate && password) {
+                currentUser = {
+                    type: 'driver',
+                    driverId: driverId,
+                    plate: plate,
+                    loginTime: new Date().toISOString()
+                };
+                
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showPage('driver');
+            } else {
+                alert('请填写完整信息');
+            }
         }
-        function checkModifyPermission() {
-            const tip = document.getElementById('modifyTip');
-            if (orderCount < 100) {
-                tip.innerText = '订单未满100单，暂不可修改资料';
-                tip.style.color = '#7f8c8d';
+        
+        function quickLogin(type) {
+            if (type === 'passenger') {
+                currentUser = {
+                    type: 'passenger',
+                    phone: 'guest_' + Date.now(),
+                    address: '',
+                    isGuest: true,
+                    loginTime: new Date().toISOString()
+                };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                showPage('passenger');
+            }
+        }
+        
+        // ===== 乘客端功能 =====
+        function initPassengerPage() {
+            // 初始化乘客页面
+            refreshLocation();
+            loadPassengerOrders();
+            updatePrice();
+            
+            // 检查登录状态
+            if (!currentUser) {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                } else {
+                    showPage('login');
+                    return;
+                }
+            }
+        }
+        
+        function refreshLocation() {
+            const locationElement = document.getElementById('currentLocation');
+            locationElement.innerHTML = '定位中...';
+            
+            // 模拟定位
+            setTimeout(() => {
+                const locations = [
+                    '忻城县人民医院',
+                    '古蓬镇中心',
+                    '忻城县汽车站',
+                    '忻城县中心广场'
+                ];
+                const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+                locationElement.innerHTML = randomLocation;
+                
+                // 保存到本地存储
+                localStorage.setItem('currentLocation', randomLocation);
+            }, 1000);
+        }
+        
+        function selectRoute(routeId) {
+            currentRoute = routeId;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.route-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 如果是自定义路线，显示额外距离输入
+            if (routeId === 'custom') {
+                document.getElementById('extraDistanceGroup').style.display = 'block';
+            } else {
+                document.getElementById('extraDistanceGroup').style.display = 'none';
+            }
+            
+            updatePrice();
+        }
+        
+        function updateDestination() {
+            const destination = document.getElementById('destinationInput').value;
+            if (destination.length > 0) {
+                updatePrice();
+            }
+        }
+        
+        function updateDistanceValue(value) {
+            document.getElementById('distanceValue').textContent = value;
+            updatePrice();
+        }
+        
+        function updatePrice() {
+            // 基础价格
+            let basePrice = 50;
+            
+            // 根据路线调整基础价格
+            if (currentRoute === 'xincheng-liuzhou') {
+                basePrice = 50;
+            } else if (currentRoute === 'liuzhou-xincheng') {
+                basePrice = 50;
+            } else if (currentRoute === 'xincheng-laibin') {
+                basePrice = 40;
+            } else if (currentRoute === 'gupeng-xincheng') {
+                basePrice = 20;
+            } else if (currentRoute === 'custom') {
+                basePrice = 50;
+            }
+            
+            // 额外距离费用
+            const extraDistance = parseInt(document.getElementById('extraDistance').value) || 0;
+            let extraPrice = 0;
+            
+            if (extraDistance > 0) {
+                if (extraDistance > 120) {
+                    extraPrice = extraDistance * 0.61;
+                } else if (extraDistance > 20) {
+                    extraPrice = 20 * 0.8 + (extraDistance - 20) * 0.7;
+                } else {
+                    extraPrice = extraDistance * 0.8;
+                }
+            }
+            
+            // 总价格
+            const totalPrice = basePrice + extraPrice;
+            
+            // 更新显示
+            document.getElementById('basePrice').textContent = '¥' + basePrice.toFixed(2);
+            document.getElementById('extraPrice').textContent = '¥' + extraPrice.toFixed(2);
+            document.getElementById('totalPrice').textContent = '¥' + totalPrice.toFixed(2);
+            document.getElementById('finalPrice').textContent = '¥' + totalPrice.toFixed(2);
+            
+            return totalPrice;
+        }
+        
+        function resetBooking() {
+            document.getElementById('destinationInput').value = '';
+            document.getElementById('extraDistance').value = 0;
+            document.getElementById('distanceValue').textContent = '0';
+            document.getElementById('locationNote').value = '';
+            document.getElementById('driversCard').style.display = 'none';
+            
+            // 重置路线选择
+            document.querySelectorAll('.route-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector('.route-btn').classList.add('active');
+            currentRoute = 'xincheng-liuzhou';
+            
+            updatePrice();
+        }
+        
+        function showDrivers() {
+            const destination = document.getElementById('destinationInput').value;
+            if (!destination) {
+                alert('请先输入目的地');
                 return;
             }
-            const now = Date.now();
-            const canModify = now - lastModifyTime >= 15 * 24 * 60 * 60 * 1000;
-            if (canModify) {
-                tip.innerText = '已接满100单，可修改资料（每15天一次）';
-                tip.style.color = '#27ae60';
+            
+            // 显示司机卡片
+            document.getElementById('driversCard').style.display = 'block';
+            
+            // 加载司机列表
+            const driversList = document.getElementById('driversList');
+            driversList.innerHTML = '';
+            
+            // 模拟司机数据
+            const drivers = [
+                { name: '李师傅', plate: '桂B12345', rating: 4.8, distance: '2.5公里', time: '5分钟' },
+                { name: '张师傅', plate: '桂B56789', rating: 4.9, distance: '3.2公里', time: '8分钟' },
+                { name: '王师傅', plate: '桂B34567', rating: 4.7, distance: '1.8公里', time: '3分钟' }
+            ];
+            
+            drivers.forEach(driver => {
+                const driverElement = document.createElement('div');
+                driverElement.className = 'order-item';
+                driverElement.style.cursor = 'pointer';
+                driverElement.onclick = () => selectDriver(driver);
+                driverElement.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 40px; height: 40px; background: #667eea; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px;">🚗</div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <div style="font-weight: bold;">${driver.name}</div>
+                                <div style="font-size: 12px; color: #666;">${driver.plate}</div>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                <div>评分: ${driver.rating} ★</div>
+                                <div style="font-size: 12px; color: #666;">距离${driver.distance} · ${driver.time}到达</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                driversList.appendChild(driverElement);
+            });
+        }
+        
+        function selectDriver(driver) {
+            const price = updatePrice();
+            const destination = document.getElementById('destinationInput').value;
+            
+            // 创建订单
+            const order = {
+                id: 'ORD' + Date.now().toString().slice(-8),
+                driver: driver.name,
+                plate: driver.plate,
+                from: localStorage.getItem('currentLocation') || '未知位置',
+                to: destination,
+                note: document.getElementById('locationNote').value,
+                price: price,
+                status: '待支付',
+                time: new Date().toLocaleString('zh-CN')
+            };
+            
+            // 保存订单
+            savePassengerOrder(order);
+            
+            // 跳转到支付页面
+            document.getElementById('paymentAmount').textContent = '¥' + price.toFixed(2);
+            showPage('payment');
+        }
+        
+        function savePassengerOrder(order) {
+            let orders = JSON.parse(localStorage.getItem('passengerOrders') || '[]');
+            orders.push(order);
+            localStorage.setItem('passengerOrders', JSON.stringify(orders));
+            
+            // 更新订单列表
+            loadPassengerOrders();
+        }
+        
+        function loadPassengerOrders() {
+            const ordersList = document.getElementById('passengerOrders');
+            ordersList.innerHTML = '';
+            
+            const orders = JSON.parse(localStorage.getItem('passengerOrders') || '[]');
+            
+            if (orders.length === 0) {
+                ordersList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无订单</div>';
+                return;
+            }
+            
+            // 只显示最近的5个订单
+            const recentOrders = orders.slice(-5).reverse();
+            
+            recentOrders.forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'order-item';
+                orderElement.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-id">${order.id}</span>
+                        <span class="order-status">${order.status}</span>
+                    </div>
+                    <div class="order-route">${order.from} → ${order.to}</div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                        <div class="order-time">${order.time}</div>
+                        <div style="font-weight: bold; color: #e74c3c;">¥${order.price.toFixed(2)}</div>
+                    </div>
+                `;
+                ordersList.appendChild(orderElement);
+            });
+        }
+        
+        function switchPassengerTab(tab) {
+            // 更新导航状态
+            document.querySelectorAll('#passengerPage .tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 这里可以根据tab切换内容，暂时只实现首页
+        }
+        
+        // ===== 司机端功能 =====
+        function initDriverPage() {
+            // 检查登录状态
+            if (!currentUser || currentUser.type !== 'driver') {
+                const savedUser = localStorage.getItem('currentUser');
+                if (savedUser) {
+                    currentUser = JSON.parse(savedUser);
+                } else {
+                    showPage('login');
+                    return;
+                }
+            }
+            
+            loadDriverRoutes();
+            loadDriverOrders();
+            loadDriverStats();
+        }
+        
+        function toggleDriverStatus() {
+            const statusText = document.getElementById('driverStatusText');
+            const toggleBtn = document.getElementById('toggleStatusBtn');
+            
+            if (statusText.classList.contains('status-online')) {
+                statusText.classList.remove('status-online');
+                statusText.classList.add('status-offline');
+                statusText.textContent = '● 已下线';
+                toggleBtn.textContent = '开始接单';
+                toggleBtn.classList.add('btn-primary');
+                toggleBtn.classList.remove('btn-secondary');
             } else {
-                const leftTime = Math.ceil((15 * 24 * 60 * 60 * 1000 - (now - lastModifyTime)) / (24 * 60 * 60 * 1000));
-                tip.innerText = `距离下次可修改还有 ${leftTime} 天`;
-                tip.style.color = '#e74c3c';
+                statusText.classList.remove('status-offline');
+                statusText.classList.add('status-online');
+                statusText.textContent = '● 在线接单中';
+                toggleBtn.textContent = '停止接单';
+                toggleBtn.classList.remove('btn-primary');
+                toggleBtn.classList.add('btn-secondary');
             }
         }
-
-        // 7. 管理员退出
-        function resetAdmin() {
-            adminStatus = false;
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('driverNav').style.display = 'none';
-            document.getElementById('adminLogin').style.display = 'block';
+        
+        function showAddRouteModal() {
+            showModal('addRouteModal');
         }
+        
+        function updateRoutePoints() {
+            const startSelect = document.getElementById('routeStart');
+            const endSelect = document.getElementById('routeEnd');
+            const customStart = document.getElementById('customStart');
+            const customEnd = document.getElementById('customEnd');
+            
+            customStart.style.display = startSelect.value === 'custom' ? 'block' : 'none';
+            customEnd.style.display = endSelect.value === 'custom' ? 'block' : 'none';
+            
+            // 防止起点和终点相同
+            if (startSelect.value === endSelect.value && startSelect.value !== 'custom') {
+                alert('起点和终点不能相同！');
+                endSelect.selectedIndex = (startSelect.selectedIndex + 1) % endSelect.options.length;
+            }
+        }
+        
+        function toggleReturnSettings() {
+            const returnSettings = document.getElementById('returnSettings');
+            returnSettings.style.display = event.target.checked ? 'block' : 'none';
+        }
+        
+        function saveRoute(e) {
+            e.preventDefault();
+            const form = e.target;
+            
+            // 收集数据
+            const routeData = {
+                id: 'route_' + Date.now(),
+                name: form.querySelector('input[placeholder="如：忻城→柳州往返线"]').value,
+                start: form.querySelector('#routeStart').value,
+                end: form.querySelector('#routeEnd').value,
+                customStart: form.querySelector('#customStart').value || null,
+                customEnd: form.querySelector('#customEnd').value || null,
+                isRoundTrip: form.querySelector('#isRoundTrip').checked,
+                departureTime: form.querySelector('input[type="time"]').value,
+                seats: form.querySelector('input[placeholder="座位数"]').value,
+                description: form.querySelector('textarea').value
+            };
+            
+            // 保存到本地存储
+            let routes = JSON.parse(localStorage.getItem('driverRoutes') || '[]');
+            routes.push({
+                ...routeData,
+                createdAt: new Date().toISOString(),
+                active: true
+            });
+            localStorage.setItem('driverRoutes', JSON.stringify(routes));
+            
+            // 关闭模态框
+            closeModal('addRouteModal');
+            
+            // 重新加载路线列表
+            loadDriverRoutes();
+            
+            alert('路线添加成功！');
+        }
+        
+        function loadDriverRoutes() {
+            const routesList = document.getElementById('driverRoutes');
+            routesList.innerHTML = '';
+            
+            const routes = JSON.parse(localStorage.getItem('driverRoutes') || '[]');
+            
+            if (routes.length === 0) {
+                routesList.innerHTML = '<div style="text-align: center; padding: 20px; color: #999;">暂无路线，请添加路线</div>';
+                return;
+            }
+            
+            routes.forEach(route => {
+                const routeElement = document.createElement('div');
+                routeElement.className = 'route-item';
+                
+                const start = route.customStart || route.start;
+                const end = route.customEnd || route.end;
+                const display = `${start} → ${end} ${route.isRoundTrip ? '🔄' : ''}`;
+                
+                routeElement.innerHTML = `
+                    <div class="route-info">
+                        <h4>${route.name}</h4>
+                        <div class="route-path">${display}</div>
+                        <div style="font-size: 12px; color: #666;">发车: ${route.departureTime} | 座位: ${route.seats}</div>
+                    </div>
+                    <div class="route-actions">
+                        <button class="btn btn-small" onclick="editRoute('${route.id}')">编辑</button>
+                        <button class="btn btn-small ${route.active ? 'btn-secondary' : 'btn-primary'}" onclick="toggleRouteActive('${route.id}')">
+                            ${route.active ? '停用' : '启用'}
+                        </button>
+                    </div>
+                `;
+                routesList.appendChild(routeElement);
+            });
+        }
+        
+        function saveDriverSettings() {
+            const settings = {
+                basePrice: parseFloat(document.getElementById('driverBasePrice').value),
+                extraRate: parseFloat(document.getElementById('driverExtraRate').value),
+                holidayRate: parseInt(document.getElementById('driverHolidayRate').value)
+            };
+            
+            localStorage.setItem('driverSettings', JSON.stringify(settings));
+        }
+        
+        function loadDriverStats() {
+            // 模拟统计数据
+            document.getElementById('todayOrders').textContent = '5';
+            document.getElementById('todayIncome').textContent = '¥325';
+            document.getElementById('driverRating').textContent = '4.8';
+            document.getElementById('driverBalance').textContent = '¥650';
+        }
+        
+        function loadDriverOrders() {
+            const ordersList = document.getElementById('driverCurrentOrders');
+            ordersList.innerHTML = '';
+            
+            // 模拟订单数据
+            const orders = [
+                {
+                    id: 'ORD001',
+                    passenger: '张先生',
+                    from: '忻城县人民医院',
+                    to: '柳州火车站',
+                    time: '14:30',
+                    price: '¥65.00',
+                    status: '进行中'
+                },
+                {
+                    id: 'ORD002',
+                    passenger: '李女士',
+                    from: '古蓬镇',
+                    to: '柳州市中心',
+                    time: '15:00',
+                    price: '¥70.00',
+                    status: '待接单'
+                }
+            ];
+            
+            orders.forEach(order => {
+                const orderElement = document.createElement('div');
+                orderElement.className = 'order-item';
+                orderElement.innerHTML = `
+                    <div class="order-header">
+                        <span class="order-id">${order.id}</span>
+                        <span class="order-status">${order.status}</span>
+                    </div>
+                    <div class="order-route">${order.from} → ${order.to}</div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                        <div style="font-size: 12px; color: #666;">乘客: ${order.passenger} | 时间: ${order.time}</div>
+                        <div style="font-weight: bold; color: #e74c3c;">${order.price}</div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
+                        <button class="btn btn-small" onclick="viewOrderDetail('${order.id}')">查看</button>
+                        <button class="btn btn-small btn-primary" onclick="acceptOrder('${order.id}')" ${order.status === '进行中' ? 'disabled' : ''}>接单</button>
+                    </div>
+                `;
+                ordersList.appendChild(orderElement);
+            });
+        }
+        
+        function switchDriverTab(tab) {
+            // 更新导航状态
+            document.querySelectorAll('#driverPage .tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // ===== 聊天功能 =====
+        function openChat(userType) {
+            // 设置聊天对象
+            if (userType === 'passenger') {
+                currentChatWith = { name: '李师傅', type: 'driver' };
+            } else {
+                currentChatWith = { name: '张先生', type: 'passenger' };
+            }
+            
+            document.getElementById('chatWith').textContent = currentChatWith.name;
+            showPage('chat');
+            loadChatMessages();
+        }
+        
+        function goBackFromChat() {
+            if (currentUser.type === 'passenger') {
+                showPage('passenger');
+            } else {
+                showPage('driver');
+            }
+        }
+        
+        function adjustChatInput() {
+            const input = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendMessageBtn');
+            
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+            
+            // 启用/禁用发送按钮
+            sendBtn.disabled = input.value.trim() === '';
+        }
+        
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const text = input.value.trim();
+            
+            if (!text) return;
+            
+            // 添加消息到界面
+            addChatMessage(text, 'sent');
+            
+            // 清空输入框
+            input.value = '';
+            adjustChatInput();
+            
+            // 保存消息
+            saveChatMessage(text, 'sent');
+            
+            // 模拟对方回复
+            setTimeout(() => {
+                const replies = [
+                    '好的，收到',
+                    '大概10分钟后到',
+                    '我在路口等你',
+                    '请稍等，马上到',
+                    '没问题'
+                ];
+                const reply = replies[Math.floor(Math.random() * replies.length)];
+                addChatMessage(reply, 'received');
+                saveChatMessage(reply, 'received');
+            }, 1000 + Math.random() * 2000);
+        }
+        
+        function addChatMessage(text, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `
+                <div>${text}</div>
+                <div class="message-time">${new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            
+            // 滚动到底部
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function saveChatMessage(text, type) {
+            const chatKey = `chat_${currentUser.type}_${currentChatWith.type}`;
+            let chatHistory = JSON.parse(localStorage.getItem(chatKey) || '[]');
+            
+            chatHistory.push({
+                text: text,
+                type: type,
+                time: new Date().toISOString()
+            });
+            
+            localStorage.setItem(chatKey, JSON.stringify(chatHistory));
+        }
+        
+        function loadChatMessages() {
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = '';
+            
+            const chatKey = `chat_${currentUser.type}_${currentChatWith.type}`;
+            const chatHistory = JSON.parse(localStorage.getItem(chatKey) || '[]');
+            
+            if (chatHistory.length === 0) {
+                addChatMessage('系统：开始聊天吧！', 'system');
+                return;
+            }
+            
+            chatHistory.forEach(msg => {
+                addChatMessage(msg.text, msg.type);
+            });
+        }
+        
+        // ===== 支付功能 =====
+        function selectPaymentMethod(method) {
+            currentPaymentMethod = method;
+            
+            // 更新UI
+            document.querySelectorAll('.method-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('div:last-child').style.backgroundColor = 'transparent';
+            });
+            
+            event.target.closest('.method-item').classList.add('active');
+            event.target.closest('.method-item').querySelector('div:last-child').style.backgroundColor = '#667eea';
+            
+            // 显示对应的支付方式内容
+            document.getElementById('wechatQR').style.display = method === 'wechat' ? 'block' : 'none';
+            document.getElementById('alipayQR').style.display = method === 'alipay' ? 'block' : 'none';
+            document.getElementById('cashInstructions').style.display = method === 'cash' ? 'block' : 'none';
+        }
+        
+        function uploadQRCode(type) {
+            document.getElementById('uploadQRType').textContent = `上传${type === 'wechat' ? '微信' : '支付宝'}收款码`;
+            showModal('uploadQRModal');
+        }
+        
+        function handleQRUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            
+            // 验证文件大小（最大2MB）
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过2MB');
+                return;
+            }
+            
+            // 这里可以添加上传逻辑，但单文件版本只能模拟
+            alert('收款码上传成功（演示功能）');
+            closeModal('uploadQRModal');
+        }
+        
+        function startPaymentTimer() {
+            // 清除之前的计时器
+            if (paymentTimer) {
+                clearInterval(paymentTimer);
+            }
+            
+            paymentTimeLeft = 15 * 60; // 15分钟
+            
+            // 更新倒计时显示
+            updatePaymentCountdown();
+            
+            // 启动计时器
+            paymentTimer = setInterval(() => {
+                paymentTimeLeft--;
+                updatePaymentCountdown();
+                
+                if (paymentTimeLeft <= 0) {
+                    clearInterval(paymentTimer);
+                    alert('支付超时，订单已取消');
+                    showPage('passenger');
+                }
+            }, 1000);
+        }
+        
+        function updatePaymentCountdown() {
+            const minutes = Math.floor(paymentTimeLeft / 60);
+            const seconds = paymentTimeLeft % 60;
+            
+            document.getElementById('paymentCountdown').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function processPayment() {
+            // 模拟支付处理
+            const payBtn = document.querySelector('#paymentPage .btn-primary');
+            payBtn.disabled = true;
+            payBtn.innerHTML = '<span class="loading"></span> 支付中...';
+            
+            setTimeout(() => {
+                // 成功概率90%
+                const success = Math.random() > 0.1;
+                
+                if (success) {
+                    // 支付成功
+                    clearInterval(paymentTimer);
+                    
+                    // 更新订单状态
+                    updateOrderStatus('已支付');
+                    
+                    // 显示成功模态框
+                    showModal('paymentSuccessModal');
+                } else {
+                    // 支付失败
+                    alert('支付失败，请重试');
+                    payBtn.disabled = false;
+                    payBtn.textContent = '确认支付';
+                }
+            }, 2000);
+        }
+        
+        function updateOrderStatus(status) {
+            // 更新本地存储中的订单状态
+            let orders = JSON.parse(localStorage.getItem('passengerOrders') || '[]');
+            if (orders.length > 0) {
+                orders[orders.length - 1].status = status;
+                localStorage.setItem('passengerOrders', JSON.stringify(orders));
+            }
+        }
+        
+        function closePaymentSuccess() {
+            closeModal('paymentSuccessModal');
+            showPage('passenger');
+            
+            // 重新加载订单
+            loadPassengerOrders();
+        }
+        
+        // ===== 通用功能 =====
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function showWithdraw() {
+            alert('提现功能正在开发中...');
+        }
+        
+        function viewOrderDetail(orderId) {
+            alert('查看订单详情: ' + orderId);
+        }
+        
+        function acceptOrder(orderId) {
+            alert('已接单: ' + orderId);
+            // 重新加载订单
+            loadDriverOrders();
+        }
+        
+        function editRoute(routeId) {
+            alert('编辑路线: ' + routeId);
+        }
+        
+        function toggleRouteActive(routeId) {
+            alert('切换路线状态: ' + routeId);
+        }
+        
+        // ===== 页面加载初始化 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否已登录
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showPage(currentUser.type === 'passenger' ? 'passenger' : 'driver');
+            } else {
+                showPage('login');
+            }
+            
+            // 微信环境检测
+            const ua = navigator.userAgent.toLowerCase();
+            const isWechat = ua.indexOf('micromessenger') !== -1;
+            
+            if (!isWechat) {
+                console.log('非微信环境，部分功能可能受限');
+            }
+            
+            // 初始化本地存储
+            if (!localStorage.getItem('passengerOrders')) {
+                localStorage.setItem('passengerOrders', JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem('driverRoutes')) {
+                localStorage.setItem('driverRoutes', JSON.stringify([]));
+            }
+            
+            if (!localStorage.getItem('driverSettings')) {
+                localStorage.setItem('driverSettings', JSON.stringify({
+                    basePrice: 50,
+                    extraRate: 0.8,
+                    holidayRate: 20
+                }));
+            }
+            
+            // 加载司机设置
+            const settings = JSON.parse(localStorage.getItem('driverSettings'));
+            if (settings) {
+                document.getElementById('driverBasePrice').value = settings.basePrice;
+                document.getElementById('driverExtraRate').value = settings.extraRate;
+                document.getElementById('driverHolidayRate').value = settings.holidayRate;
+            }
+        });
     </script>
 </body>
-
 </html>
